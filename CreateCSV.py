@@ -54,7 +54,7 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
             aggregate(dirname, fileName, accelAggregatorsList, isLongTimeWindow, stringForName)
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
             aggregate(dirname, fileName, audioAggregatorsList, isLongTimeWindow, stringForName)
-    return
+
 
 def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
     filePath = os.path.join(dirname,fileName)
@@ -75,6 +75,7 @@ def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
         #result is a matrix that every column calculates a feature
         appendColumn(newFile, newFile, windows)
 
+
 def appendColumn(newFile, filePath, result):
     allLines = []
     reader = csv.reader(newFile)
@@ -87,20 +88,19 @@ def appendColumn(newFile, filePath, result):
         with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(allLines)
-    return
+
 
 def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
     createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow=0, stringForName='short')
-    return
+
 
 def createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
     createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow=1, stringForName='long')
-    return
+
 
 def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
 
     func_pointers = [stats.tmax, stats.tmin, stats.trim_mean]
-
     if isLongTimeWindow == 0:
         return []
     data = []
@@ -110,24 +110,31 @@ def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
     data = np.array(data)
     for column in data.T:
         values = [func(column) for func in func_pointers]
-
+    return values
 
 def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
     if isLongTimeWindow == 1:
         return [] #TODO assert this
-
     return
 
-def lowFreqsCounter(window):
+
+def lowFreqsCounter(window, shortTimeWindowPath):
     #if isLongTimeWindow == 0:
      #   return [] #TODO assert this
-    reader = csv.reader(filePath)
+    numberOfrows = LONG_TIME_WINDOW/SHORT_TIME_WINDOW
+    data = []
+    shortTimeWindowFile = open(shortTimeWindowPath)
+    reader = csv.reader(shortTimeWindowFile)
+    dataIter = iter(reader)
+    counter = 0
     for row in reader:
+        counter = ((counter+1) % numberOfrows)
         data.append(row)
     data = np.array(data)
     for column in data.T:
 
     return
+
 
 def mean(filePath, isLongTimeWindow, shotTimeWindowPath):
     return
