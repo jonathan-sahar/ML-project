@@ -1,13 +1,16 @@
-__author__ = 'Jonathan & Tomer'
+__author__ = 'Inspiron'
 
 from datetime import datetime
 import os
 import csv
 import re
+import numpy as np
+import scipy.stats as stats
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
 UNDERLINES_BEFORE_NAME = 2
-FIVE_MINUTES = 300
+LONG_TIME_WINDOW = 300
+SHORT_TIME_WINDOW = 5
 delete = False
 
 
@@ -17,9 +20,8 @@ def addLabels(dirname, filenames):
 
         # avoid junk files
         name, extension = os.path.splitext(filePath)
-        if extension != ".csv" or fileName[0] == '.':
+        if extension != ".csv" or fileName[0] == '.' or fileName[:7] == 'divided':
             continue
-
         # get subject's name with regex, check if sick or control
         match_exp = re.compile('([A-Z]+)')
         subject_name = match_exp.search(fileName).group(0)
@@ -54,20 +56,37 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
             aggregate(dirname, fileName, audioAggregatorsList, isLongTimeWindow, stringForName)
     return
 
-def aggregate(dirname, fileName, aggregators, isContext, stringForName):
+def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
     filePath = os.path.join(dirname,fileName)
-    newFilePath = os.path.join(dirname,fileName[:-4]+'_'+stringForName+'.csv')
-    f = open(newFilePath, 'w')
+    dataFile = open(filePath)
+    newFilePath = os.path.join(dirname,'divided'+fileName[3:-4]+'_'+stringForName+'.csv')
+    newFile = open(newFilePath, 'w') #is it OK to pass a file?
+    windows = []
     for func in aggregators:
-        if isContext == False:
-            result = func(filePath, newFilePath, isContext)
+        if isLongTimeWindow:
+            windowLength = LONG_TIME_WINDOW
         else:
-            result = func(filePath, newFilePath, isContext, os.path.join(dirname,fileName[:-4]+'_short.csv'))
+            windowLength = SHORT_TIME_WINDOW
+        window =[]
+        reader = csv.reader(dataFile)
+        for i in range(0,windowLength):
+            window.append(reader.next())
+        windows.append(func(window))
         #result is a matrix that every column calculates a feature
-        appendColumn(newFilePath, result)
+        appendColumn(newFile, newFile, windows)
 
-def appendColumn():
+def appendColumn(newFile, filePath, result):
+    allLines = []
+    reader = csv.reader(newFile)
+    resultIter = iter(result)
+    for row in reader:
+        row+= resultIter.next()
+        allLines.append(row) #TODO I don't think append. all the columns in the same layer
 
+        # open file for writing
+        with open(filePath, 'w') as out_file:
+            writer = csv.writer(out_file, lineterminator='\n')
+            writer.writerows(allLines)
     return
 
 def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
@@ -78,15 +97,113 @@ def createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAgg
     createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow=1, stringForName='long')
     return
 
+def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
+
+    func_pointers = [stats.tmax, stats.tmin, stats.trim_mean]
+
+    if isLongTimeWindow == 0:
+        return []
+    data = []
+    reader = csv.reader(filePath)
+    for row in reader:
+        data.append(row)
+    data = np.array(data)
+    for column in data.T:
+        values = [func(column) for func in func_pointers]
+
+
+def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
+    if isLongTimeWindow == 1:
+        return [] #TODO assert this
+
+    return
+
+def lowFreqsCounter(window):
+    #if isLongTimeWindow == 0:
+     #   return [] #TODO assert this
+    reader = csv.reader(filePath)
+    for row in reader:
+        data.append(row)
+    data = np.array(data)
+    for column in data.T:
+
+    return
+
+def mean(filePath, isLongTimeWindow, shotTimeWindowPath):
+    return
+
 if __name__ == "__main__":
     rootFolder = True
     accelAggregatorsList = []
     audioAggregatorsList = []
-    data_directory = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-    for dirname, dirnames, filenames in os.walk(data_directory):
+    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
         if rootFolder == True:
             rootFolder = False
             continue
         addLabels(dirname, filenames)
         createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList)
         createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList)
+
+
+
+
+'''
+f = open(filePath, 'w')
+            lines = []
+            allLines =
+            for line in allLines:
+                #print "sometjons"
+                if lineCounter == 0:
+                    line += ',"Is sick"'
+                    lines.append(line)
+                    lineCounter+=1
+                    continue
+                line += ','+str(sick)
+                lines.append(line)
+            f.close()
+            os.remove(filePath)
+            f = open(filePath, 'w')
+            print lines[0]
+            f.writelines(lines)
+            print f.readlines()[0]
+
+
+
+
+def addLabels(dirname, filenames):
+    for fileName in filenames:
+        lineCounter = 0
+        filePath = os.path.join(dirname,fileName)
+        fileIntro, fileExtension = os.path.splitext(filePath)
+        name = fileName
+        underscoreCounter = 0
+        if fileExtension == '.csv':
+            while underscoreCounter < UNDERLINES_BEFORE_NAME:
+                if name[0] == '_':
+                    underscoreCounter += 1
+                name = name[1:]
+            if name[0:4] in ['Appl', 'Dafo', 'Lill', 'Lily', 'Oran', 'Rose', 'Sunf', 'Swee']:
+                sick = 0
+            else:
+                sick = 1
+
+            all_lines = []
+            with open(filePath, 'r') as input_file:
+                    reader = csv.reader(input_file)
+                    row0 = reader.next()
+                    #print row0
+                    row0.append('Is sick')
+                    #print row0
+                    #print("appending".format(row0))
+                    all_lines.append(row0)
+                    for row in reader:
+                        row.append(str(sick))
+                        all_lines.append(row)
+            with open(filePath, 'w') as out_file:
+                writer = csv.writer(out_file, lineterminator='\n')
+                writer.writerows(all_lines)
+    return
+
+
+
+'''
