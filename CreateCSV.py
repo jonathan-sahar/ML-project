@@ -1,4 +1,4 @@
-__author__ = 'Inspiron'
+__author__ = 'Jonathan & Tomer'
 
 from datetime import datetime
 import os
