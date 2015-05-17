@@ -5,12 +5,9 @@ from datetime import datetime
 import os
 import csv
 import re
-<<<<<<< HEAD
 import numpy as np
 import scipy.stats as stats
-=======
-import numpy
->>>>>>> origin/master
+
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
 UNDERLINES_BEFORE_NAME = 2
@@ -133,8 +130,8 @@ def lowFreqsCounter(window, shortTimeWindowPath):
     dataIter = iter(reader)
     counter = 0
     for row in reader:
+        columns =
         counter = ((counter+1) % numberOfrows)
-        data.append(row)
     data = np.array(data)
     for column in data.T:
 
