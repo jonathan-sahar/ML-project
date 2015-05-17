@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5cacc321-72c4-4044-a69a-e29e9f4233ad" name="Default" comment="replace CSV and add data deletion">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/Parkinson-project.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bla.txt" />
+      <change type="MOVED" beforePath="C:\Users\Inspiron\PycharmProjects\Parkinson-project\CreateCSV.py" afterPath="$PROJECT_DIR$/CreateCSVs.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Parkinson-project.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -41,11 +38,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CreateCSV.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/CreateCSV.py">
+      <file leaf-file-name="CreateCSVs.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/CreateCSVs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7352941" vertical-offset="1751" max-vertical-offset="3672">
-              <caret line="133" column="25" selection-start-line="133" selection-start-column="25" selection-end-line="133" selection-end-column="25" />
+            <state vertical-scroll-proportion="0.7352941" vertical-offset="1853" max-vertical-offset="3791">
+              <caret line="137" column="25" selection-start-line="137" selection-start-column="25" selection-end-line="137" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -348,10 +345,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CreateCSV.py">
+    <entry file="file://$PROJECT_DIR$/CreateCSVs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7352941" vertical-offset="1751" max-vertical-offset="3672">
-          <caret line="133" column="25" selection-start-line="133" selection-start-column="25" selection-end-line="133" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.7352941" vertical-offset="1853" max-vertical-offset="3791">
+          <caret line="137" column="25" selection-start-line="137" selection-start-column="25" selection-end-line="137" selection-end-column="25" />
           <folding />
         </state>
       </provider>

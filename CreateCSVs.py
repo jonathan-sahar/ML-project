@@ -4,8 +4,12 @@ from datetime import datetime
 import os
 import csv
 import re
+<<<<<<< HEAD
 import numpy as np
 import scipy.stats as stats
+=======
+import numpy
+>>>>>>> origin/master
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
 UNDERLINES_BEFORE_NAME = 2
