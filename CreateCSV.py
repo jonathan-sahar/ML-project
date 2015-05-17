@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import csv
 import re
+import numpy
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
 UNDERLINES_BEFORE_NAME = 2
