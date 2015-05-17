@@ -115,7 +115,6 @@ def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
 def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
     if isLongTimeWindow == 1:
         return [] #TODO assert this
-
     return
 
 def lowFreqsCounter(window):
