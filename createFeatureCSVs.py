@@ -58,9 +58,7 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
             aggregate(filePath, audioAggregatorsList, TimeWindow)
 
 
-def aggregate(filePath, aggregators, TimeWindow):
-    newFilePath = filePath[:-4]+'_'+TimeWindow+'.csv'
-    newFile = open(newFilePath, 'w')
+def aggregate(DataMatrix, aggregators, TimeWindow):
 
     if TimeWindow == 'short':
         dataTimeWindows = divideToWindows(filePath, SHORT_TIME_WINDOW)
@@ -210,9 +208,9 @@ if __name__ == "__main__":
             rootFolder = False
             continue
         addLabels(dirname, filenames)
-        createShortTimeWindowTable(dirname,filenames, accelAggregatorsListShort, audioAggregatorsListShort)
-        createLongTimeWindowTable(dirname, filenames, accelAggregatorsListLong, audioAggregatorsListLong)
-        createEntireTimeWindowTable(dirname, filenames, accelAggregatorsListEntire, audioAggregatorsListEntire)
+        createShortTimeWindowTable(dataMatrix, AggregatorsListShort)
+        createLongTimeWindowTable(dataMatrix,shortTimeMatrix, AggregatorsListLong)
+        createEntireTimeWindowTable(dataMatrix, shortTimeMatrix, longTimeMatrix, AggregatorsListEntire)
 
 
 
