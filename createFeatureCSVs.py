@@ -59,7 +59,7 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
 
 
 def aggregate(DataMatrix, aggregators, TimeWindow):
-
+    newFilePath
     if TimeWindow == 'short':
         dataTimeWindows = divideToWindows(filePath, SHORT_TIME_WINDOW)
     elif TimeWindow == 'long':
@@ -77,8 +77,8 @@ def aggregate(DataMatrix, aggregators, TimeWindow):
             result = func(dataTimeWindows, shortTimeWindows)
         else:
             result = func(dataTimeWindows, shortTimeWindows, longTimeWindows)
-        #result is a matrix that every column calculates a feature
-        appendColumn(newFile, result)
+        #result is a matrix where every column is a calculated feature
+        appendColumns(newFilePath, result)
 
 '''
 def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
@@ -101,18 +101,23 @@ def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
         appendColumn(newFile, newFile, windows)
 '''
 
-def appendColumn(newFile, filePath, result):
+def appendColumns(newFilePath, coloumns):
+    """Do some things.
+    :param newFile: path of file we want to append to.
+    :param coloumns: matrix of calculated values to be appended (joined along the columns on the right)
+    """
     allLines = []
+    newFile = open(newFilePath, 'r')
     reader = csv.reader(newFile)
-    resultIter = iter(result)
+    resultIter= iter(coloumns)
     for row in reader:
-        row+= resultIter.next()
+        row += resultIter.next()
         allLines.append(row)
 
-        # open file for writing
-        with open(filePath, 'w') as out_file:
-            writer = csv.writer(out_file, lineterminator='\n')
-            writer.writerows(allLines)
+    # open file for writing
+    with open(newFilePath, 'w') as out_file:
+        writer = csv.writer(out_file, lineterminator='\n')
+        writer.writerows(allLines)
 
 #the three currently are not really needed. also, stringFoName not needed
 def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
@@ -195,6 +200,13 @@ def lowFreqsCounter(window, shortTimeWindowPath):
         lineCounter = ((lineCounter+1) % numberOfrows)
     return data
 
+
+BLOCK_LENGTH = 1000 # TODO: set this to 1GB/sizeof(line)
+DATA_TABLE_PATH = 'C:\ML\parkinson\FAKEDATA'
+SHORT_TABLE_PATH = 'C:\ML\parkinson\FAKEDATA'
+LONG_TABLE_PATH = 'C:\ML\parkinson\FAKEDATA'
+
+
 if __name__ == "__main__":
     rootFolder = True
     accelAggregatorsListLong = []
@@ -203,15 +215,42 @@ if __name__ == "__main__":
     audioAggregatorsListShort = []
     accelAggregatorsListEntire = []
     audioAggregatorsListEntire = []
+
+    block = []
+    block_short = []
+    num_lines = 0
+    reader = csv.reader(DATA_TABLE_PATH)
+    reader_short = csv.reader(SHORT_TABLE_PATH)
+    append_short = True
+    for row in reader:
+        block.append(row)
+        #try adding a line from the short windows file.
+        if append_short:
+            try:
+                block_short.append(reader_short.next())
+            except StopIteration:
+                append_short = False
+        num_lines += 1
+        if num_lines == BLOCK_LENGTH:
+            createShortTimeWindowTable(block, aggregatorsListShort)
+            createLongTimeWindowTable(block,shortTimeMatrix, aggregatorsListLong)
+            block = []
+            num_lines = 0
+
+    # rest of file, if no. of lines % BLOCK_LENGTH != 0
+    createShortTimeWindowTable(block, aggregatorsListShort)
+    createLongTimeWindowTable(block,shortTimeMatrix, aggregatorsListLong)
+    createEntireTimeWindowTable(block, shortTimeMatrix, longTimeMatrix, aggregatorsListEntire)
+    block = []
+    num_lines = 0
+
+    createEntireTimeWindowTable(block, shortTimeMatrix, longTimeMatrix, aggregatorsListEntire)
+
     for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
         if rootFolder == True:
             rootFolder = False
             continue
         addLabels(dirname, filenames)
-        createShortTimeWindowTable(dataMatrix, AggregatorsListShort)
-        createLongTimeWindowTable(dataMatrix,shortTimeMatrix, AggregatorsListLong)
-        createEntireTimeWindowTable(dataMatrix, shortTimeMatrix, longTimeMatrix, AggregatorsListEntire)
-
 
 
 '''
