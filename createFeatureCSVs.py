@@ -197,7 +197,6 @@ def lowFreqsCounter(window, shortTimeWindowPath):
         lineCounter = ((lineCounter+1) % numberOfrows)
     return data
 
-
 if __name__ == "__main__":
     rootFolder = True
     accelAggregatorsListLong = []
