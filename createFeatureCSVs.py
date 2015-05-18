@@ -48,26 +48,39 @@ def addLabels(dirname, filenames):
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(all_lines)
 
-def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow, stringForName):
+def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow):
     for fileName in filenames:
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
-            aggregate(filePath, accelAggregatorsList, isLongTimeWindow, stringForName)
+            aggregate(filePath, accelAggregatorsList, TimeWindow)
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
-            aggregate(filePath, audioAggregatorsList, isLongTimeWindow, stringForName)
+            aggregate(filePath, audioAggregatorsList, TimeWindow)
 
 
-def aggregate(filePath, aggregators, isLongTimeWindow, stringForName):
-    newFilePath = filePath[:-4]+'_'+stringForName+'.csv'
-    open(newFilePath, 'w').close()
+def aggregate(filePath, aggregators, TimeWindow):
+    newFilePath = filePath[:-4]+'_'+TimeWindow+'.csv'
+    newFile = open(newFilePath, 'w')
+
+    if TimeWindow == 'short':
+        dataTimeWindows = divideToWindows(filePath, SHORT_TIME_WINDOW)
+    elif TimeWindow == 'long':
+        dataTimeWindows = divideToWindows(filePath, LONG_TIME_WINDOW)
+        shortTimeWindows = divideToWindows(filePath[:-4]+'_short.csv', LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
+    else: #TimeWindow == 'entire':
+        dataTimeWindows = divideToWindows(filePath, '''files length''')
+        shortTimeWindows = divideToWindows(filePath[:-4]+'_short.csv', '''files length'''/SHORT_TIME_WINDOW) #TODO does that really exist?
+        longTimeWindows = divideToWindows(filePath[:-4]+'_long.csv', '''files length'''/LONG_TIME_WINDOW)
+
     for func in aggregators:
-        if isLongTimeWindow == False: #TODO add option for the third one
-            result = func(filePath, isLongTimeWindow)
+        if TimeWindow == 'short':
+            result = func(dataTimeWindows)
+        elif TimeWindow == 'long':
+            result = func(dataTimeWindows, shortTimeWindows)
         else:
-            result = func(filePath, isLongTimeWindow, filePath[:-4]+'_short.csv')
+            result = func(dataTimeWindows, shortTimeWindows, longTimeWindows)
         #result is a matrix that every column calculates a feature
-        appendColumn(newFilePath, result)
+        appendColumn(newFile, result)
 
 '''
 def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
@@ -105,24 +118,19 @@ def appendColumn(newFile, filePath, result):
 
 #the three currently are not really needed. also, stringFoName not needed
 def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='short', stringForName='short')
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='short')
 
 
 def createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='long', stringForName='long')
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='long')
 
 
 def createEntireTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='entire', stringForName='entire')
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='entire')
 
 
-def divideToWindows(filePath, isLongTimeWindow):
+def divideToWindows(filePath, windowLength):
     dataFile = open(filePath)
-    if isLongTimeWindow:
-        windowLength = LONG_TIME_WINDOW
-    else:
-        windowLength = SHORT_TIME_WINDOW
-
     windows =[]
     window = []
     reader = csv.reader(dataFile)
@@ -137,10 +145,9 @@ def divideToWindows(filePath, isLongTimeWindow):
     return windows
 
 
-def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
+def stats(timeWindow, timeWindowLength):
     func_pointers = [(stats.tmax, 'max'), stats.tmin, stats.trim_mean] #TODO add more functions and tuple with feature name
-    if isLongTimeWindow == 0:
-        return []
+
     data = []
     reader = csv.reader(filePath)
     for row in reader:
@@ -150,12 +157,15 @@ def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
         values = [func(column) for func in func_pointers]
     return values
 
+def statsForLongTimeWindow():
 
+def statsForLongTimeWindow():
 
+'''
 def calculateFeatureFromColumn(windows, functionsAndIndexs):
     #calculates each func with relevant
     return
-
+'''
 
 def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
     #if isLongTimeWindow == 1:#TODO find their threshold
