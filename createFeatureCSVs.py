@@ -13,6 +13,7 @@ CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', '
 UNDERLINES_BEFORE_NAME = 2
 LONG_TIME_WINDOW = 300
 SHORT_TIME_WINDOW = 5
+DATA_SIZE = 12323342344
 delete = False
 
 
@@ -47,8 +48,8 @@ def addLabels(dirname, filenames):
         with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(all_lines)
-
-def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow):
+'''
+def createAggregatedTable(aggregatorsList, TimeWindow, dataMatrix, shortTimeMatrix, longTimeMatrix):
     for fileName in filenames:
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
@@ -56,19 +57,20 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
             aggregate(filePath, accelAggregatorsList, TimeWindow)
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
             aggregate(filePath, audioAggregatorsList, TimeWindow)
+'''
 
+def aggregate(aggregators, TimeWindow, DataMatrix,  shortTimeMatrix, longTimeMatrix):
+    #TODO create newFilePath with TimeWindow value
 
-def aggregate(DataMatrix, aggregators, TimeWindow):
-    newFilePath
     if TimeWindow == 'short':
-        dataTimeWindows = divideToWindows(filePath, SHORT_TIME_WINDOW)
+        dataTimeWindows = divideToWindows(DataMatrix, SHORT_TIME_WINDOW)
     elif TimeWindow == 'long':
-        dataTimeWindows = divideToWindows(filePath, LONG_TIME_WINDOW)
-        shortTimeWindows = divideToWindows(filePath[:-4]+'_short.csv', LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
+        dataTimeWindows = divideToWindows(DataMatrix, LONG_TIME_WINDOW)
+        shortTimeWindows = divideToWindows(shortTimeMatrix, LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
     else: #TimeWindow == 'entire':
-        dataTimeWindows = divideToWindows(filePath, '''files length''')
-        shortTimeWindows = divideToWindows(filePath[:-4]+'_short.csv', '''files length'''/SHORT_TIME_WINDOW) #TODO does that really exist?
-        longTimeWindows = divideToWindows(filePath[:-4]+'_long.csv', '''files length'''/LONG_TIME_WINDOW)
+        dataTimeWindows = divideToWindows(DataMatrix, DATA_SIZE)
+        shortTimeWindows = divideToWindows(shortTimeMatrix, DATA_SIZE/SHORT_TIME_WINDOW) #TODO does that really exist?
+        longTimeWindows = divideToWindows(longTimeMatrix, DATA_SIZE/LONG_TIME_WINDOW)
 
     for func in aggregators:
         if TimeWindow == 'short':
@@ -79,6 +81,9 @@ def aggregate(DataMatrix, aggregators, TimeWindow):
             result = func(dataTimeWindows, shortTimeWindows, longTimeWindows)
         #result is a matrix where every column is a calculated feature
         appendColumns(newFilePath, result)
+
+
+
 
 '''
 def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
@@ -109,7 +114,7 @@ def appendColumns(newFilePath, coloumns):
     allLines = []
     newFile = open(newFilePath, 'r')
     reader = csv.reader(newFile)
-    resultIter= iter(coloumns)
+    resultIter = iter(result)
     for row in reader:
         row += resultIter.next()
         allLines.append(row)
@@ -120,16 +125,16 @@ def appendColumns(newFilePath, coloumns):
         writer.writerows(allLines)
 
 #the three currently are not really needed. also, stringFoName not needed
-def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='short')
+def createShortTimeWindowTable(dataMatrix, aggregatorsListShort):
+    aggregate(aggregatorsListShort, TimeWindow='short', dataMatrix, None, None)
 
 
-def createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='long')
+def createLongTimeWindowTable(dataMatrix,shortTimeMatrix, aggregatorsListLong):
+    aggregate(aggregatorsListLong, TimeWindow='long', dataMatrix, shortTimeMatrix, None)
 
 
-def createEntireTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='entire')
+def createEntireTimeWindowTable(dataMatrix, shortTimeMatrix, longTimeMatrix, aggregatorsListEntire):
+    aggregate(aggregatorsListEntire, TimeWindow='entire', dataMatrix, shortTimeMatrix, longTimeMatrix)
 
 
 def divideToWindows(filePath, windowLength):
@@ -209,13 +214,13 @@ LONG_TABLE_PATH = 'C:\ML\parkinson\FAKEDATA'
 
 if __name__ == "__main__":
     rootFolder = True
-    accelAggregatorsListLong = []
-    audioAggregatorsListLong = []
-    accelAggregatorsListShort = []
-    audioAggregatorsListShort = []
-    accelAggregatorsListEntire = []
-    audioAggregatorsListEntire = []
-
+    aggregatorsListLong = []
+    aggregatorsListShort = []
+    aggregatorsListEntire = []
+    dataMatrix = []
+    shortTimeMatrix = []
+    longTimeMatrix = []
+    #TODO addLabels
     block = []
     block_short = []
     num_lines = 0
@@ -246,11 +251,16 @@ if __name__ == "__main__":
 
     createEntireTimeWindowTable(block, shortTimeMatrix, longTimeMatrix, aggregatorsListEntire)
 
+'''
     for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
         if rootFolder == True:
             rootFolder = False
             continue
         addLabels(dirname, filenames)
+        createShortTimeWindowTable(dataMatrix, AggregatorsListShort)
+        createLongTimeWindowTable(dataMatrix,shortTimeMatrix, AggregatorsListLong)
+        createEntireTimeWindowTable(dataMatrix, shortTimeMatrix, longTimeMatrix, AggregatorsListEntire)
+'''
 
 
 '''

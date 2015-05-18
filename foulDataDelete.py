@@ -75,6 +75,7 @@ def validTable(dateColumb, filePath, lineCounter):
 
 if __name__ == "__main__":
     main()
+    #TODO make sure audio and accel are in the same length and unite?
 
 '''
 NUMBER_OF_UNDERSCORES_BEFORE_DATE = 5
