@@ -53,11 +53,23 @@ def createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregat
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
-            aggregate(dirname, fileName, accelAggregatorsList, isLongTimeWindow, stringForName)
+            aggregate(filePath, accelAggregatorsList, isLongTimeWindow, stringForName)
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
-            aggregate(dirname, fileName, audioAggregatorsList, isLongTimeWindow, stringForName)
+            aggregate(filePath, audioAggregatorsList, isLongTimeWindow, stringForName)
 
 
+def aggregate(filePath, aggregators, isLongTimeWindow, stringForName):
+    newFilePath = filePath[:-4]+'_'+stringForName+'.csv'
+    open(newFilePath, 'w').close()
+    for func in aggregators:
+        if isLongTimeWindow == False: #TODO add option for the third one
+            result = func(filePath, isLongTimeWindow)
+        else:
+            result = func(filePath, isLongTimeWindow, filePath[:-4]+'_short.csv')
+        #result is a matrix that every column calculates a feature
+        appendColumn(newFilePath, result)
+
+'''
 def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
     filePath = os.path.join(dirname,fileName)
     dataFile = open(filePath)
@@ -76,7 +88,7 @@ def aggregate(dirname, fileName, aggregators, isLongTimeWindow, stringForName):
         windows.append(func(window))
         #result is a matrix that every column calculates a feature
         appendColumn(newFile, newFile, windows)
-
+'''
 
 def appendColumn(newFile, filePath, result):
     allLines = []
@@ -84,25 +96,49 @@ def appendColumn(newFile, filePath, result):
     resultIter = iter(result)
     for row in reader:
         row+= resultIter.next()
-        allLines.append(row) #TODO I don't think append. all the columns in the same layer
+        allLines.append(row)
 
         # open file for writing
         with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(allLines)
 
-
+#the three currently are not really needed. also, stringFoName not needed
 def createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow=0, stringForName='short')
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='short', stringForName='short')
 
 
 def createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
-    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, isLongTimeWindow=1, stringForName='long')
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='long', stringForName='long')
+
+
+def createEntireTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList):
+    createAggregatedTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList, TimeWindow='entire', stringForName='entire')
+
+
+def divideToWindows(filePath, isLongTimeWindow):
+    dataFile = open(filePath)
+    if isLongTimeWindow:
+        windowLength = LONG_TIME_WINDOW
+    else:
+        windowLength = SHORT_TIME_WINDOW
+
+    windows =[]
+    window = []
+    reader = csv.reader(dataFile)
+    lineCounter = 0
+    for row in reader:
+        lineCounter +=1
+        window.append(reader.next())
+        if lineCounter == windowLength:
+            lineCounter = 0
+            windows.append(window)
+            window = []
+    return windows
 
 
 def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
-
-    func_pointers = [stats.tmax, stats.tmin, stats.trim_mean]
+    func_pointers = [(stats.tmax, 'max'), stats.tmin, stats.trim_mean] #TODO add more functions and tuple with feature name
     if isLongTimeWindow == 0:
         return []
     data = []
@@ -114,9 +150,18 @@ def stats(filePath, isLongTimeWindow, shotTimeWindowPath):
         values = [func(column) for func in func_pointers]
     return values
 
+
+
+def calculateFeatureFromColumn(windows, functionsAndIndexs):
+    #calculates each func with relevant
+    return
+
+
 def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
-    if isLongTimeWindow == 1:
-        return [] #TODO assert this
+    #if isLongTimeWindow == 1:#TODO find their threshold
+     #   return [] #TODO assert this
+
+
     return
 
 
@@ -127,32 +172,38 @@ def lowFreqsCounter(window, shortTimeWindowPath):
     data = []
     shortTimeWindowFile = open(shortTimeWindowPath)
     reader = csv.reader(shortTimeWindowFile)
-    dataIter = iter(reader)
-    counter = 0
+    row = reader.next()
+    columbs = row.split(',')
+    index = columbs.index('lowFreq') #TODO this is the name?
+    lineCounter = 0
+    thresholdCounter = 0
     for row in reader:
-        columns =
-        counter = ((counter+1) % numberOfrows)
-    data = np.array(data)
-    for column in data.T:
+        columbs = row.split(',')
+        if columbs[index] == 1:
+            thresholdCounter+=1
+        if lineCounter == numberOfrows - 1:
+            data.append(thresholdCounter)
+            thresholdCounter = 0
+        lineCounter = ((lineCounter+1) % numberOfrows)
+    return data
 
-    return
-
-
-def mean(filePath, isLongTimeWindow, shotTimeWindowPath):
-    return
 
 if __name__ == "__main__":
     rootFolder = True
-    accelAggregatorsList = []
-    audioAggregatorsList = []
+    accelAggregatorsListLong = []
+    audioAggregatorsListLong = []
+    accelAggregatorsListShort = []
+    audioAggregatorsListShort = []
+    accelAggregatorsListEntire = []
+    audioAggregatorsListEntire = []
     for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
         if rootFolder == True:
             rootFolder = False
             continue
         addLabels(dirname, filenames)
-        createShortTimeWindowTable(dirname,filenames, accelAggregatorsList, audioAggregatorsList)
-        createLongTimeWindowTable(dirname, filenames, accelAggregatorsList, audioAggregatorsList)
-
+        createShortTimeWindowTable(dirname,filenames, accelAggregatorsListShort, audioAggregatorsListShort)
+        createLongTimeWindowTable(dirname, filenames, accelAggregatorsListLong, audioAggregatorsListLong)
+        createEntireTimeWindowTable(dirname, filenames, accelAggregatorsListEntire, audioAggregatorsListEntire)
 
 
 
