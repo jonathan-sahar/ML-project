@@ -5,15 +5,13 @@ from datetime import datetime
 import os
 import csv
 import re
-import numpy as np
-import scipy.stats as stats
+
+import featureCalculationFunctions
 
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
 UNDERLINES_BEFORE_NAME = 2
-LONG_TIME_WINDOW = 300
-SHORT_TIME_WINDOW = 5
-DATA_SIZE = 12323342344
+DATA_LEN = 1000000000
 delete = False
 
 
@@ -114,7 +112,7 @@ def appendColumns(newFilePath, coloumns):
     allLines = []
     newFile = open(newFilePath, 'r')
     reader = csv.reader(newFile)
-    resultIter = iter(result)
+    resultIter= iter(coloumns)
     for row in reader:
         row += resultIter.next()
         allLines.append(row)
@@ -153,58 +151,11 @@ def divideToWindows(filePath, windowLength):
     return windows
 
 
-def stats(timeWindow, timeWindowLength):
-    func_pointers = [(stats.tmax, 'max'), stats.tmin, stats.trim_mean] #TODO add more functions and tuple with feature name
-
-    data = []
-    reader = csv.reader(filePath)
-    for row in reader:
-        data.append(row)
-    data = np.array(data)
-    for column in data.T:
-        values = [func(column) for func in func_pointers]
-    return values
-
-def statsForLongTimeWindow():
-
-def statsForLongTimeWindow():
-
 '''
 def calculateFeatureFromColumn(windows, functionsAndIndexs):
     #calculates each func with relevant
     return
 '''
-
-def lowFreqShortWindow(filePath, isLongTimeWindow, shotTimeWindowPath):
-    #if isLongTimeWindow == 1:#TODO find their threshold
-     #   return [] #TODO assert this
-
-
-    return
-
-
-def lowFreqsCounter(window, shortTimeWindowPath):
-    #if isLongTimeWindow == 0:
-     #   return [] #TODO assert this
-    numberOfrows = LONG_TIME_WINDOW/SHORT_TIME_WINDOW
-    data = []
-    shortTimeWindowFile = open(shortTimeWindowPath)
-    reader = csv.reader(shortTimeWindowFile)
-    row = reader.next()
-    columbs = row.split(',')
-    index = columbs.index('lowFreq') #TODO this is the name?
-    lineCounter = 0
-    thresholdCounter = 0
-    for row in reader:
-        columbs = row.split(',')
-        if columbs[index] == 1:
-            thresholdCounter+=1
-        if lineCounter == numberOfrows - 1:
-            data.append(thresholdCounter)
-            thresholdCounter = 0
-        lineCounter = ((lineCounter+1) % numberOfrows)
-    return data
-
 
 BLOCK_LENGTH = 1000 # TODO: set this to 1GB/sizeof(line)
 DATA_TABLE_PATH = 'C:\ML\parkinson\FAKEDATA'
