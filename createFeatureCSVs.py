@@ -1,18 +1,9 @@
 __author__ = 'Inspiron'
-
-
-from datetime import datetime
 import os
 import csv
 import re
-
 import featureCalculationFunctions
 
-
-CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
-UNDERLINES_BEFORE_NAME = 2
-DATA_LEN = 1000000000
-delete = False
 
 
 def addLabels(dirname, filenames):

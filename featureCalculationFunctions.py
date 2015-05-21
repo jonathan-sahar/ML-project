@@ -3,10 +3,9 @@ import numpy as np
 import scipy.stats as stats
 import csv
 from entropy import entropy_ci
-from constants import audio_fields, accl_fields
-LONG_TIME_WINDOW = 300
-SHORT_TIME_WINDOW = 5
-ENTROPY_RADIUS = 5
+from constants import *
+from pyeeg import dfa
+
 
 def _mode(values): return stats.mode(values)[0][0]
 def _range(a): return stats.tmax(a) - stats.tmin(a)
@@ -27,9 +26,24 @@ def _cross_correlation_accl(window, energy_type):
     a = window[:, accl_fields["x.PSD."+ psd]]
     b = window[:, accl_fields["y.PSD."+ psd]]
     return stats.pearsonr(a,b)[0]
+#TODO: add cross_entropy from theano
+
+def _DFA(a): return dfa(a, DFA_WINDOW_LEN)
+def _per_window_TAKEO(a):
+    values = [y**2 - x*z for x, y, z in zip(a[:-2],a[1:-1],a[2:])]
+    return reduce(lambda x, y: x+y, values)/(len(a)-2)
 
 
-def statisticsForAllColoumns(timeWindow, timeWindowLength, filePath):
+
+def statisticsForAllColoumns(timeWindow, timeWindowLength, filePath, windowHasFirstRow):
+    '''
+
+    :param timeWindow:
+    :param timeWindowLength:
+    :param filePath:
+    :param windowHasFirstRow:
+    :return: a np.array, either one line of data OR two lines - one titles and one data
+    '''
     func_pointers = [(stats.tmax, 'max'),
                      (stats.tmin,'min' ),
                      (stats.trim_mean,'mean'),
@@ -44,13 +58,17 @@ def statisticsForAllColoumns(timeWindow, timeWindowLength, filePath):
                                 ] #TODO add more functions
 
     data = []
+    newLine = [] #values will hold a matrix
     reader = csv.reader(filePath)
+    if windowHasFirstRow:
+        newLine += reader.next()
+        newLine.append([])
     for row in reader:
         data.append(row)
     data = np.array(data)
     for column in data.T:
-        values = [func(column) for func in func_pointers]
-    return values
+        newLine[len(newLine)-1] += [func(column) for func in func_pointers]
+    return np.array(newLine)
 
 
 

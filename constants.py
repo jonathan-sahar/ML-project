@@ -1,4 +1,17 @@
 __author__ = 'Jonathan'
+
+LONG_TIME_WINDOW = 300
+SHORT_TIME_WINDOW = 5
+ENTROPY_RADIUS = 5
+
+DFA_WINDOW_LEN = 10 # no. of lines
+
+CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
+UNDERLINES_BEFORE_NAME = 2
+DATA_LEN = 1000000000
+
+delete = False
+
 accl = ["diffSecs",
   "N.samples",
   "x.mean",
