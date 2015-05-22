@@ -2,7 +2,7 @@ __author__ = 'Inspiron'
 import os
 import csv
 import re
-import constants
+from constants import *
 import featureCalculationFunctions
 
 
@@ -58,9 +58,9 @@ def aggregate(aggregators, TimeWindow, DataMatrix,  shortTimeMatrix, longTimeMat
         dataTimeWindows = divideToWindows(DataMatrix, LONG_TIME_WINDOW)
         shortTimeWindows = divideToWindows(shortTimeMatrix, LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
     else: #TimeWindow == 'entire':
-        dataTimeWindows = divideToWindows(DataMatrix, DATA_SIZE)
-        shortTimeWindows = divideToWindows(shortTimeMatrix, DATA_SIZE/SHORT_TIME_WINDOW) #TODO does that really exist?
-        longTimeWindows = divideToWindows(longTimeMatrix, DATA_SIZE/LONG_TIME_WINDOW)
+        dataTimeWindows = divideToWindows(DataMatrix, DATA_LEN)
+        shortTimeWindows = divideToWindows(shortTimeMatrix, DATA_LEN/SHORT_TIME_WINDOW) #TODO does that really exist?
+        longTimeWindows = divideToWindows(longTimeMatrix, DATA_LEN/LONG_TIME_WINDOW)
 
     for func in aggregators:
         if TimeWindow == 'short':
