@@ -3,16 +3,17 @@ __author__ = 'Inspiron'
 import os
 import shutil
 from datetime import datetime
+from constants import *
 
-SHORT_TIME_WINDOW = 5
-LONG_TIME_WINDOW = 300
 delete = False
 
 def main():
     goodRecordings = 0
     badRecordings = 0
     SubfolderCounter = 0
-    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\DATA'):
+    dataFile = open(DATA_TABLE_FILE_PATH, 'w')
+
+    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
         if SubfolderCounter == 0:
             #don't want to delete root
             SubfolderCounter+=1
@@ -21,20 +22,23 @@ def main():
         isValidSecAccel = True
         isValidSecAudio = True
         for fileName in filenames:
-            #going on all files in root and each subfolder
+            #going on all files in current folder
             filePath = os.path.join(dirname,fileName)
             fileIntro, fileExtension = os.path.splitext(filePath)
             if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
                 (isValidSecAccel, accelLineCounter) = validTable(26, filePath, 0)
                 #making sure there are not remain rows for aggregation
                 deleteLastRows(filePath, accelLineCounter % LONG_TIME_WINDOW)
+                copyContextToUniteFile(filePath, 'accel')
             if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
                 (isValidSecAudio, audioLineCounter) = validTable(20, filePath, 0)
                 #making sure there are not remain rows for aggregation
-                deleteLastRows(filePath, accelLineCounter % LONG_TIME_WINDOW)
+                deleteLastRows(filePath, audioLineCounter % LONG_TIME_WINDOW)
+                copyContextToUniteFile(filePath, 'accel')
         #if isValidSecAccel or isValidSecAudio is false, the the data is 'foul'
         isFoulSec = not (isValidSecAccel and isValidSecAudio)
-        if accelLineCounter <= LONG_TIME_WINDOW or audioLineCounter <= LONG_TIME_WINDOW or isFoulSec == True:
+        if (accelLineCounter <= LONG_TIME_WINDOW) or (audioLineCounter <= LONG_TIME_WINDOW)\
+                or (isFoulSec == True) or (accelLineCounter != audioLineCounter):
             badRecordings = badRecordings + accelLineCounter
             if (delete == True) and (SubfolderCounter>0):
                shutil.rmtree(dirname)
