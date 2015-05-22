@@ -3,7 +3,7 @@ import os
 import csv
 import re
 from constants import *
-import featureCalculationFunctions
+from featureCalculationFunctions import *
 
 
 
