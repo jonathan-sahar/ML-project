@@ -63,12 +63,11 @@ def addLabels(dirname, filenames):
         if extension != ".csv" or fileName[0] == '.' or fileName[:7] == 'divided':
             continue
         # get subject's name with regex, check if sick or control
-        match_exp = re.compile('([A-Z]+)')
+        match_exp = re.compile('_([A-Z]+)_')
         subject_name = match_exp.search(fileName).group(0)
-        if name in CONTROL:
+        if subject_name in CONTROL:
             sick = 0
         else:
-            name = match_exp.search(fileName).group(0)
             sick = 1
         all_lines = []
 
@@ -81,7 +80,7 @@ def addLabels(dirname, filenames):
             all_lines.append(row0)
             for row in reader:
                 row.append(str(sick))
-                row.append(str(name))
+                row.append(subject_name)
                 all_lines.append(row)
 
         # open file for writing
