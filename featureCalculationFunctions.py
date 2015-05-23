@@ -2,10 +2,18 @@ __author__ = 'Jonathan'
 import numpy as np
 import scipy.stats as stats
 import csv
+import pywt
+import re
+
 from entropy import entropy_ci
 from constants import *
 from pyeeg import dfa
+from itertools import *
+from collections import deque
 
+def getFieldNames(origNames, operations):
+    newFields = [str(x) + '_' + str(y) for x,y in product(origNames, operations)]
+    return  origNames + newFields
 
 def _mode(values): return stats.mode(values)[0][0]
 def _range(a): return stats.tmax(a) - stats.tmin(a)
@@ -29,22 +37,38 @@ def _cross_correlation_accl(window, energy_type):
 #TODO: add cross_entropy from theano
 
 def _DFA(a): return dfa(a, DFA_WINDOW_LEN)
-def _per_window_TAKEO(a):
+
+def _per_window_mean_TKEO(a):
     values = [y**2 - x*z for x, y, z in zip(a[:-2],a[1:-1],a[2:])]
     return reduce(lambda x, y: x+y, values)/(len(a)-2)
 
 
 
-def statisticsForAllColoumns(timeWindow, timeWindowLength, filePath, windowHasFirstRow):
-    '''
+def windowHasFirstRow(timeWindow):
+    match_exp = re.compile('([^\d]+)')
+    firstFieldContents = timeWindow[0][0]
+    return match_exp.search(firstFieldContents) == None
 
-    :param timeWindow:
-    :param timeWindowLength:
-    :param filePath:
-    :param windowHasFirstRow:
-    :return: a np.array, either one line of data OR two lines - one titles and one data
+def waveletCompressForAllColoumns(timeWindow, shortTimeWindows, windowType):
     '''
-    func_pointers = [(stats.tmax, 'max'),
+    :param timeWindow:
+    :param shortTimeWindows:
+    :param windowType:
+    :return:
+    '''
+    rows = []
+    if windowHasFirstRow(timeWindow):
+        origNames = timeWindow[1]
+        newFirstRow = getFieldNames(origNames, [touple[1] for touple in stat_func_pointers])
+        rows.append(newFirstRow)
+
+    rows.append([])
+    for column in timeWindow[1:].T:
+        rows[len(rows)-1] += [func(column) for func in stat_func_pointers] # put the calculated fields in the correct row of result
+
+    return np.array(rows)
+
+stat_func_pointers = [(stats.tmax, 'max'),
                      (stats.tmin,'min' ),
                      (stats.trim_mean,'mean'),
                      (_mode, 'mode'),
@@ -54,21 +78,31 @@ def statisticsForAllColoumns(timeWindow, timeWindowLength, filePath, windowHasFi
                      (stats.kurtosis, 'kurtosis'),
                      (_entropy, 'entropy'),
                      (stats.kurtosis, 'kurtosis'),
+                     (_per_window_mean_TKEO, 'mean_TKEO')
+                     ] #TODO add more functionsdc
 
-                                ] #TODO add more functions
+freq_domain_func_pointers = [()
 
-    data = []
-    newLine = [] #values will hold a matrix
-    reader = csv.reader(filePath)
-    if windowHasFirstRow:
-        newLine += reader.next()
-        newLine.append([])
-    for row in reader:
-        data.append(row)
-    data = np.array(data)
-    for column in data.T:
-        newLine[len(newLine)-1] += [func(column) for func in func_pointers]
-    return np.array(newLine)
+]
+def statisticsForAllColoumns(timeWindow, shortTimeWindows, windowType):
+    '''
+
+    :param timeWindow:
+    :param shortTimeWindows:
+    :param windowType:
+    :return:
+    '''
+    rows = []
+    if windowHasFirstRow(timeWindow):
+        origNames = timeWindow[1]
+        newFirstRow = getFieldNames(origNames, [touple[1] for touple in stat_func_pointers])
+        rows.append(newFirstRow)
+
+    rows.append([])
+    for column in timeWindow[1:].T:
+        rows[len(rows)-1] += [func(column) for func in stat_func_pointers] # put the calculated fields in the correct row of result
+
+    return np.array(rows)
 
 
 
@@ -78,9 +112,9 @@ def statsForLongTimeWindow():
 def statsForLongTimeWindow():
     return
 
-def lowFreqsCounter(window, shortTimeWindowPath):
-    #if isLongTimeWindow == 0:
-     #   return [] #TODO assert this
+
+# Functions for reducing windows into lines
+def lowFreqsCounter(window, ):
     numberOfrows = LONG_TIME_WINDOW/SHORT_TIME_WINDOW
     data = []
     shortTimeWindowFile = open(shortTimeWindowPath)
