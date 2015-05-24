@@ -63,9 +63,9 @@ def addLabels(dirname, filenames):
         if extension != ".csv" or fileName[0] == '.' or fileName[:7] == 'divided':
             continue
         # get subject's name with regex, check if sick or control
-        match_exp = re.compile('_([A-Z]+)_')
+        match_exp = re.compile('([A-Z]+)')
         subject_name = match_exp.search(fileName).group(0)
-        if subject_name in CONTROL:
+        if name in CONTROL:
             sick = 0
         else:
             sick = 1

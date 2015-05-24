@@ -6,25 +6,25 @@ from constants import *
 from featureCalculationFunctions import *
 
 
-def aggregate(aggregators, TimeWindow, dataWindows, aggregatedWindows):
+def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
     row = []
     for func in aggregators:
-        if TimeWindow == 'short':
-            result = func(dataWindows)
-        elif TimeWindow == 'long':
-            result = func(dataWindows, aggregatedWindows)
-        else: #TimeWindow == 'entire'
-            result = func(dataWindows, aggregatedWindows)
+        if windowType == 'short':
+            result = func(dataWindow)
+        elif windowType == 'long':
+            result = func(dataWindow, aggregatedWindows)
+        else: #windowType == 'entire'
+            result = func(dataWindow, aggregatedWindows)
         row += result
     return row
 
 
-def createTimeWindowTable(aggregatorsList, TimeWindow, dataWindows, aggregatedWindows):
+def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWindows):
     assert len(dataWindows) == len(aggregatedWindows)
     table = []
     aggIter = iter(aggregatedWindows)
     for timeWindow in dataWindows:
-        row = aggregate(aggregatorsList, TimeWindow, timeWindow, aggIter.next()) #TODO eager or lazy evaluation in Python?
+        row = aggregate(aggregatorsList, windowType, timeWindow, aggIter.next()) #TODO eager or lazy evaluation in Python?
         table.append(row)
     return table
 
@@ -91,3 +91,14 @@ if __name__ == "__main__":
         aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', dataMatrix, aggregatedWindows)
         writer = csv.writer(entireAggregatedFile, lineterminator='\n')
         writer.writerows(aggregatedAll)
+
+
+'''
+import csv
+path = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\HumDynLog_APPLE_LGE_LGE_A0000028AF9C96_20111220_115329_20111220_120000\hdl_accel_APPLE_20111220_115330.csv'
+dataFile = open(path, 'r')
+reader = csv.reader(dataFile)
+for row in reader:
+    print row
+print window
+'''
