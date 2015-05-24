@@ -4,6 +4,7 @@ import os
 import shutil
 from datetime import datetime
 from constants import *
+import numpy as np
 import re
 import csv
 
@@ -29,20 +30,23 @@ def deleteUnvalidData(dirname, filenames):
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
             (accelLines, isValidSecAccel, accelLineCounter) = validTable(26, filePath)
             #making sure there are not remain rows for aggregation
-            del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
+            #del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
+            #print "after accel"
+            #print(len(accelLines))
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
             (audioLines, isValidSecAudio, audioLineCounter) = validTable(20, filePath)
             #making sure there are not remain rows for aggregation
-            print "before audio"
-            print len(audioLines)
-            del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
-            print "after"
-            print len(audioLines)
+            #print "before audio"
+            #print len(audioLines)
+            #del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
+            #print "after audio"
+            #print len(audioLines)
     #if isValidSecAccel or isValidSecAudio is false, the the data is 'foul'
     isFoulSec = not (isValidSecAccel and isValidSecAudio)
-    if (accelLineCounter <= LONG_TIME_WINDOW) or (audioLineCounter <= LONG_TIME_WINDOW) or (isFoulSec == True) \
-            or ((accelLineCounter - accelLineCounter%LONG_TIME_WINDOW) != (audioLineCounter - audioLineCounter%LONG_TIME_WINDOW)):
-            #or (accelStartTime != audioStartTime):
+    (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
+    (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
+
+    if (accelLineCounter <= LONG_TIME_WINDOW) or (isFoulSec == True):
         if (delete == True) and (SubfolderCounter>0):
            shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
@@ -50,8 +54,31 @@ def deleteUnvalidData(dirname, filenames):
         lines = mergeLists(accelLines, audioLines)
         return (lines, accelLineCounter, 0)
 
-def mergeLists(leftList, rightList):
+def makeSameLength(accelLines,audioLines):
+    newLength = min(len(accelLines),len(audioLines))
+    newLength = newLength - newLength%LONG_TIME_WINDOW + 1
+    accelLines = accelLines[0:newLength]
+    audioLines = audioLines[0:newLength]
+    return (accelLines, audioLines)
 
+def makeSameStartTime(accelLines,audioLines):
+    if len(accelLines) < 2 or len(audioLines) < 2:
+        return ([],[])
+    accelLine = (accelLines[1]).split(',')
+    audioLine = (audioLines[1]).split(',')
+    acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
+    audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
+    while acceldateObj > audiodateObj:
+        audioLines = [audioLines[0]]+audioLines[2:]
+        audioLine = (audioLines[1]).split(',')
+        audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
+    while audiodateObj > acceldateObj:
+        accelLines = [accelLines[0]]+accelLines[2:]
+        accelLine = (accelLines[1]).split(',')
+        acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
+    return (accelLines,audioLines)
+
+def mergeLists(leftList, rightList):
     all_lines = []
     rightListIter = iter(rightList)
     for line in leftList:
@@ -145,7 +172,7 @@ if __name__ == "__main__":
     writer = csv.writer(dataFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
     writer.writerows(dataTable)
 
-    print('time under 5 min is {}'.format(badRecordings))
-    print('time over 5 min is {}'.format(goodRecordings))
+    print('time to delete {}'.format(badRecordings))
+    print('time to remain {}'.format(goodRecordings))
     print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
 
