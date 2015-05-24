@@ -8,10 +8,10 @@ import re
 import csv
 
 
-delete = False
+
 
 def deleteUnvalidData(dirname, filenames):
-
+    delete = False
     #both initiated to True in case they are not found in the folder at all
     isValidSecAccel = True
     isValidSecAudio = True
@@ -29,14 +29,17 @@ def deleteUnvalidData(dirname, filenames):
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
             (accelLines, isValidSecAccel, accelLineCounter) = validTable(26, filePath)
             #making sure there are not remain rows for aggregation
-            del accelLines[-(accelLineCounter % LONG_TIME_WINDOW):]
+            del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
             (audioLines, isValidSecAudio, audioLineCounter) = validTable(20, filePath)
             #making sure there are not remain rows for aggregation
-            del audioLines[-(audioLineCounter % LONG_TIME_WINDOW):]
+            print "before audio"
+            print len(audioLines)
+            del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
+            print "after"
+            print len(audioLines)
     #if isValidSecAccel or isValidSecAudio is false, the the data is 'foul'
     isFoulSec = not (isValidSecAccel and isValidSecAudio)
-    lines = mergeLists(accelLines, audioLines)
     if (accelLineCounter <= LONG_TIME_WINDOW) or (audioLineCounter <= LONG_TIME_WINDOW) or (isFoulSec == True) \
             or ((accelLineCounter - accelLineCounter%LONG_TIME_WINDOW) != (audioLineCounter - audioLineCounter%LONG_TIME_WINDOW)):
             #or (accelStartTime != audioStartTime):
@@ -44,6 +47,7 @@ def deleteUnvalidData(dirname, filenames):
            shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
     else:
+        lines = mergeLists(accelLines, audioLines)
         return (lines, accelLineCounter, 0)
 
 def mergeLists(leftList, rightList):
@@ -80,7 +84,7 @@ def addLabels(dirname, filenames):
             all_lines.append(row0)
             for row in reader:
                 row.append(str(sick))
-                row.append(subject_name)
+                row.append(subject_name[1:-1])
                 all_lines.append(row)
 
         # open file for writing
@@ -110,7 +114,7 @@ def validTable(dateColumb, filePath):
             twoLastTime = lastTime
             lastTime = dateObj
         if (dateObj - lastTime).seconds > 2 and (dateObj - twoLastTime).seconds > 2:
-            return (False, lineCounter)
+            return ([], False, lineCounter)
         twoLastTime = lastTime
         lastTime = dateObj
         lineCounter+=1
@@ -143,5 +147,5 @@ if __name__ == "__main__":
 
     print('time under 5 min is {}'.format(badRecordings))
     print('time over 5 min is {}'.format(goodRecordings))
-    print(float(badRecordings)/(float(goodRecordings+1)))
+    print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
 
