@@ -11,11 +11,11 @@ import csv
 
 
 
-def deleteUnvalidData(dirname, filenames):
+def deleteInvalidData(dirname, filenames):
     delete = False
     #both initiated to True in case they are not found in the folder at all
-    isValidSecAccel = True
-    isValidSecAudio = True
+    isValidAcclTable = True
+    isValidAudioTable = True
     accelLineCounter = 0
     audioLineCounter = 0
     #accelStartTime = None
@@ -28,25 +28,30 @@ def deleteUnvalidData(dirname, filenames):
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
-            (accelLines, isValidSecAccel, accelLineCounter) = validTable(26, filePath)
+            print 'processing accl'
+            (accelLines, isValidAcclTable, accelLineCounter) = validTable(26, filePath)
             #making sure there are not remain rows for aggregation
             #del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
             #print "after accel"
             #print(len(accelLines))
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
-            (audioLines, isValidSecAudio, audioLineCounter) = validTable(20, filePath)
+            print 'processing audio'
+            (audioLines, isValidAudioTable, audioLineCounter) = validTable(20, filePath)
             #making sure there are not remain rows for aggregation
-            #print "before audio"
+            #print "be  fore audio"
             #print len(audioLines)
             #del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
             #print "after audio"
             #print len(audioLines)
-    #if isValidSecAccel or isValidSecAudio is false, the the data is 'foul'
-    isFoulSec = not (isValidSecAccel and isValidSecAudio)
+    #if isValidAcclTable or isValidAudioTable is false, the the data is 'foul'
+    tablesContainGaps = not (isValidAcclTable and isValidAudioTable)
     (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
     (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
+    print "printing from deleteInvalidData:"
+    # print accelLines
+    # print audioLines
 
-    if (accelLineCounter <= LONG_TIME_WINDOW) or (isFoulSec == True):
+    if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True):
         if (delete == True) and (SubfolderCounter>0):
            shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
@@ -64,13 +69,13 @@ def makeSameLength(accelLines,audioLines):
 def makeSameStartTime(accelLines,audioLines):
     if len(accelLines) < 2 or len(audioLines) < 2:
         return ([],[])
-    accelLine = (accelLines[1]).split(',')
-    audioLine = (audioLines[1]).split(',')
+    accelLine = accelLines[1]
+    audioLine = audioLines[1]
     acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
     audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
     while acceldateObj > audiodateObj:
         audioLines = [audioLines[0]]+audioLines[2:]
-        audioLine = (audioLines[1]).split(',')
+        audioLine = audioLines[1]
         audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
     while audiodateObj > acceldateObj:
         accelLines = [accelLines[0]]+accelLines[2:]
@@ -88,7 +93,7 @@ def mergeLists(leftList, rightList):
 def addLabels(dirname, filenames):
     for fileName in filenames:
         filePath = os.path.join(dirname,fileName)
-
+        outPath = os.path.join(dirname,'output.csv')
         # avoid junk files
         name, extension = os.path.splitext(filePath)
         if extension != ".csv" or fileName[0] == '.' or fileName[:7] == 'divided':
@@ -115,23 +120,26 @@ def addLabels(dirname, filenames):
                 all_lines.append(row)
 
         # open file for writing
-        with open(filePath, 'w') as out_file:
+        with open(outPath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(all_lines)
 
 
-def validTable(dateColumb, filePath):
+def validTable(dateColumn, filePath):
+#TODO: add the first row (fields) if it's the first call to validate
     valid = True
     lineCounter = 0
     lines = []
-    for line in open(filePath, 'r').readlines():
+    fileHandle = open(filePath, 'r')
+    reader = csv.reader(fileHandle)
+
+    for line in reader:
         #skip titles
         if lineCounter == 0:
             lineCounter+=1
             continue
-        columns = line.split(',')
         try:
-            dateObj = datetime.strptime(columns[dateColumb][0:19], '%Y-%m-%d %H:%M:%S')
+            dateObj = datetime.strptime(line[dateColumn], '%Y-%m-%d %H:%M:%S')
         except ValueError:
             continue
         if lineCounter == 1:
@@ -152,6 +160,7 @@ def validTable(dateColumb, filePath):
 
 if __name__ == "__main__":
 
+
     dataFile = open(DATA_TABLE_FILE_PATH, 'w')
     goodRecordings = 0
     badRecordings = 0
@@ -166,7 +175,7 @@ if __name__ == "__main__":
         #adding labels
         addLabels(dirname, filenames)
         #delete unwanted parts (bad table, and modulu of tables)
-        (table ,goodPart, badPart) = deleteUnvalidData(dirname, filenames)
+        (table ,goodPart, badPart) = deleteInvalidData(dirname, filenames)
         goodRecordings += goodPart
         badRecordings += badPart
         dataTable += table
@@ -178,3 +187,16 @@ if __name__ == "__main__":
     print('time to remain {}'.format(goodRecordings))
     print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
 
+
+'''
+rows = []
+writePath = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\HumDynLog_APPLE_LGE_LGE_A0000028AF9C96_20111220_115329_20111220_120000\out_test.csv'
+dataFile = open(dirname + '\\' + filenames[0], 'r')
+outFile = open(writePath, 'w')
+reader = csv.reader(dataFile)
+writer = csv.writer(outFile)
+for row in reader:
+    rows.append(row)
+print rows
+writer.writerows(rows)
+'''
