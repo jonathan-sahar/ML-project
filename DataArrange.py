@@ -121,6 +121,7 @@ def addLabels(dirname, filenames):
 
 
 def validTable(dateColumb, filePath):
+    valid = True
     lineCounter = 0
     lines = []
     for line in open(filePath, 'r').readlines():
@@ -132,8 +133,6 @@ def validTable(dateColumb, filePath):
         try:
             dateObj = datetime.strptime(columns[dateColumb][0:19], '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            #TODO delete line
-            print "fuck"
             continue
         if lineCounter == 1:
             lastTime = dateObj
@@ -141,11 +140,14 @@ def validTable(dateColumb, filePath):
             twoLastTime = lastTime
             lastTime = dateObj
         if (dateObj - lastTime).seconds > 2 and (dateObj - twoLastTime).seconds > 2:
-            return ([], False, lineCounter)
+            valid = False
         twoLastTime = lastTime
         lastTime = dateObj
         lineCounter+=1
         lines.append(line)
+
+    if valid == False:
+        return ([], False, lineCounter)
     return (lines, True, lineCounter)
 
 if __name__ == "__main__":
