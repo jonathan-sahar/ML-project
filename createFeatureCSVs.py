@@ -27,14 +27,17 @@ def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
 
 
 def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWindows):
-    print dataWindows
+    #print dataWindows
     table = []
     if windowType == 'short':
         for timeWindow in dataWindows:
             row = aggregate(aggregatorsList, windowType, timeWindow, None)
             table.append(row)
     else:
-        assert len(dataWindows) == len(aggregatedWindows)
+        #print aggregatedWi
+        #print dataWindowsndows
+        if windowType == 'long':
+            assert len(dataWindows) == len(aggregatedWindows)
         aggIter = iter(aggregatedWindows)
         for timeWindow in dataWindows:
             item = aggIter.next()
@@ -45,6 +48,7 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
 
 def divideToWindows(dataMatrix, windowLength):
     # np.array(dataMatrix).shape
+    firtsIteration = True
     if dataMatrix == []:
         return []
     windows =[]
@@ -53,10 +57,17 @@ def divideToWindows(dataMatrix, windowLength):
     for row in dataMatrix:
         lineCounter +=1
         window.append(row)
-        if lineCounter == windowLength:
-            lineCounter = 0
-            windows.append(window)
-            window = []
+        if firtsIteration == True:
+            if lineCounter == windowLength+1:
+                lineCounter = 0
+                windows.append(window)
+                window = []
+                firtsIteration = False
+        else:
+            if lineCounter == windowLength:
+                lineCounter = 0
+                windows.append(window)
+                window = []
     return windows
 
 
@@ -82,26 +93,32 @@ if __name__ == "__main__":
     aggregatedSubWindows = []
     aggregatedWindows = []
 
+    counter = 0
     #create 5 sec per line table, per person
     for patient in PATIENTS:
-        dataMatrix = readFile(DATA_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv')
+        dataMatrix.append(readFile(DATA_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv'))
         shortAggregatedFile = open(SHORT_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
         #np.array(dataMatrix).shape
-        dataSubWindows = divideToWindows(dataMatrix, SHORT_TIME_WINDOW)
-        aggregatedSubWindows = createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None) #TODO check if easy to return the table
+        dataSubWindows = divideToWindows(dataMatrix[counter], SHORT_TIME_WINDOW)
+        aggregatedSubWindows.append(createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None)) #TODO check if easy to return the table
         writer = csv.writer(shortAggregatedFile, lineterminator='\n')
-        writer.writerows(aggregatedSubWindows)
+        writer.writerows(aggregatedSubWindows[counter])
+        counter += 1
 
+    counter = 0
     #create 5 min per line table
     for patient in PATIENTS:
         longAggregatedFile = open(LONG_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
         #DATA_LEN/LONG_TIME_WINDOW WINDOWS
-        dataWindows = divideToWindows(dataMatrix, LONG_TIME_WINDOW)
+        dataWindows = divideToWindows(dataMatrix[counter], LONG_TIME_WINDOW)
+        print dataWindows
         #(DATA_LEN/SHORT_TIME_WINDOW)/(LONG_TIME_WINDOW/SHORT_TIME_WINDOW) WINDOWS = DATA_LEN/LONG_TIME
-        subWindows = divideToWindows(aggregatedSubWindows, LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
-        aggregatedWindows = createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows)
+        subWindows = divideToWindows(aggregatedSubWindows[counter], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
+        print subWindows
+        aggregatedWindows.append(createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
         writer = csv.writer(longAggregatedFile, lineterminator='\n')
-        writer.writerows(aggregatedWindows)
+        writer.writerows(aggregatedWindows[counter])
+        counter += 1
 
     #create patient per line table
     #patientWindowsList = divideToPatients(dataMatrix, LongWindowsMatrix) not necesssary any more
