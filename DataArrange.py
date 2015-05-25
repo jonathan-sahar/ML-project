@@ -168,7 +168,7 @@ if __name__ == "__main__":
     SubfolderCounter = 0
     dataTable = []
 
-    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FAKEDATA'):
+    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FIRSTDATA'):
         if SubfolderCounter == 0:
             #don't want to delete root
             SubfolderCounter+=1
