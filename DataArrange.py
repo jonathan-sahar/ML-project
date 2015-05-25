@@ -28,14 +28,14 @@ def deleteInvalidData(dirname, filenames):
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
-            print 'processing accl'
+            #print 'processing accl'
             (accelLines, isValidAcclTable, accelLineCounter) = validTable(26, filePath)
             #making sure there are not remain rows for aggregation
             #del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
             #print "after accel"
             #print(len(accelLines))
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
-            print 'processing audio'
+            #print 'processing audio'
             (audioLines, isValidAudioTable, audioLineCounter) = validTable(20, filePath)
             #making sure there are not remain rows for aggregation
             #print "be  fore audio"
@@ -47,7 +47,7 @@ def deleteInvalidData(dirname, filenames):
     tablesContainGaps = not (isValidAcclTable and isValidAudioTable)
     (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
     (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
-    print "printing from deleteInvalidData:"
+    #print "printing from deleteInvalidData:"
     # print accelLines
     # print audioLines
 
@@ -79,7 +79,7 @@ def makeSameStartTime(accelLines,audioLines):
         audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
     while audiodateObj > acceldateObj:
         accelLines = [accelLines[0]]+accelLines[2:]
-        accelLine = (accelLines[1]).split(',')
+        accelLine = accelLines[1]
         acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
     return (accelLines,audioLines)
 
@@ -93,12 +93,13 @@ def mergeLists(leftList, rightList):
 def addLabels(dirname, filenames):
     for fileName in filenames:
         filePath = os.path.join(dirname,fileName)
-        outPath = os.path.join(dirname,'output.csv')
+        #outPath = os.path.join(dirname,'output.csv')
         # avoid junk files
         name, extension = os.path.splitext(filePath)
-        if extension != ".csv" or fileName[0:9] != 'hdl_audio' or fileName[:7] == 'divided':
+        if extension != ".csv" or fileName[:9] != 'hdl_audio' or fileName[:7] == 'divided': #TODO improve files name
             continue
         # get subject's name with regex, check if sick or control
+        print fileName
         match_exp = re.compile('([A-Z]+)')
         subject_name = match_exp.search(fileName).group(0)
         if name in CONTROL:
@@ -116,11 +117,11 @@ def addLabels(dirname, filenames):
             all_lines.append(row0)
             for row in reader:
                 row.append(str(sick))
-                row.append(subject_name[1:-1])
+                row.append(subject_name)
                 all_lines.append(row)
 
         # open file for writing
-        with open(outPath, 'w') as out_file:
+        with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(all_lines)
 
