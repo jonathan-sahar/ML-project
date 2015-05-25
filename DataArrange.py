@@ -61,7 +61,7 @@ def deleteInvalidData(dirname, filenames):
 
 def makeSameLength(accelLines,audioLines):
     newLength = min(len(accelLines),len(audioLines))
-    newLength = newLength - newLength%LONG_TIME_WINDOW + 1
+    newLength = newLength - newLength%LONG_TIME_WINDOW
     accelLines = accelLines[0:newLength]
     audioLines = audioLines[0:newLength]
     return (accelLines, audioLines)
