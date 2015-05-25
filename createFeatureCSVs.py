@@ -4,38 +4,36 @@ import csv #TODO make sure doesn't use csv because in featureCalculationFunction
 import re
 from constants import *
 import numpy as np
-#from featureCalculationFunctions import *
+from featureCalculationFunctions import *
 
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
-    #print dataWindow
-    row = []
+    aggregatedWindow = []
+    if windowHasFirstRow(dataWindow):
+        aggregatedWindow.append([])
     for func in aggregators:
         if windowType == 'short':
             result = func(dataWindow)
-            #print result
         elif windowType == 'long':
             result = func(dataWindow, aggregatedWindows)
         else: #windowType == 'entire'
             result = func(dataWindow, aggregatedWindows)
-        #print result
-        row += result
-        #x = row+result
-        #print x
-
-    return row
-
+    # hand  le result if it contains field names:
+    if result[0]:
+        aggregatedWindow[0] += result[0]
+        aggregatedWindow[1] += result[1]
+    else:
+        aggregatedWindow += result[1]
+    return aggregatedWindow
 
 def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWindows):
-    #print dataWindows
+    assert len(dataWindows) == len(aggregatedWindows)
     table = []
     if windowType == 'short':
         for timeWindow in dataWindows:
             row = aggregate(aggregatorsList, windowType, timeWindow, None)
             table.append(row)
     else:
-        #print aggregatedWi
-        #print dataWindowsndows
         if windowType == 'long':
             assert len(dataWindows) == len(aggregatedWindows)
         aggIter = iter(aggregatedWindows)
@@ -72,21 +70,22 @@ def divideToWindows(dataMatrix, windowLength):
 
 
 def readFile(filePath):
-    allLines = []
     newFile = open(filePath, 'r')
     reader = csv.reader(newFile)
+    allLines = [reader.next()]
+    match = re.compile('(\d+\:\d+\:\d+)')
     for row in reader:
-        allLines.append(row)
+        # line = [getValue(x) for x in row]
+        line = [float(value) for value in row if not match.search(value)]
+        # print("line (floats): {}".format(line))
+        allLines.append(line)
     return allLines
-
-def foo(valueList):
-    return [3]
 
 if __name__ == "__main__":
     #define the aggregators for each table
-    aggregatorsListLong = [foo]
-    aggregatorsListShort = [foo]
-    aggregatorsListEntire = [foo]
+    aggregatorsListLong = []
+    aggregatorsListShort = []
+    aggregatorsListEntire = []
 
     #initialize
     dataMatrix = []
@@ -128,13 +127,3 @@ if __name__ == "__main__":
         writer = csv.writer(entireAggregatedFile, lineterminator='\n')
         writer.writerows(aggregatedAll)
 
-
-'''
-import csv
-path = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\HumDynLog_APPLE_LGE_LGE_A0000028AF9C96_20111220_115329_20111220_120000\hdl_accel_APPLE_20111220_115330.csv'
-dataFile = open(path, 'r')
-reader = csv.reader(dataFile)
-for row in reader:
-    print row
-print window
-'''

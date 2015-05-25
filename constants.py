@@ -23,3 +23,12 @@ FREQ_L = 10
 
 
 delete = False
+
+
+import logging
+LOG_LEVEL = 'DEBUG'
+numeric_level = getattr(logging, LOG_LEVEL, None)
+logging.basicConfig(level=numeric_level)
+
+
+

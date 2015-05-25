@@ -24,7 +24,9 @@ def getFieldNames(origNames, modifiers):
 
 def windowHasFirstRow(timeWindow):
     match_exp = re.compile('([^\d]+)')
-    firstFieldContents = timeWindow[0][0]
+    print timeWindow
+    print timeWindow[0,0]
+    firstFieldContents = timeWindow[0,0]
     return match_exp.search(firstFieldContents) == None
 
 
@@ -62,14 +64,15 @@ def _zero_crossing_rate(a):
 def samplesInFreqRange(window):
     fields = [accl_fields["x.PSD."+ str(psd_D[energy_type])] for energy_type in ['high', 'med', 'low']]
     freqData = np.array(window[:, fields])
-    means = freqData.mean()
     if windowHasFirstRow(window):
         origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
         firstRow = getFieldNames(origNames, ['is_freq_in_range '])
         rows = firstRow
+        freqData = freqData[1:,:]
     else:
         rows = []
-    rows.append((FREQ_H < means) & (means < FREQ_H))
+    means = freqData.mean(0)
+    rows.append((FREQ_L < means) & (means < FREQ_H))
 
     return np.array(rows)
 
@@ -139,7 +142,7 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows, windowType):
 stat_func_pointers = [
                      (stats.tmax, 'max'),
                      (stats.tmin,'min' ),
-                     (stats.trim_mean,'mean'),
+                     (stats.tmean,'mean'),
                      (stats.tstd, 'std'),
                      (stats.skew, 'skew'),
                      (stats.kurtosis, 'kurtosis'),
@@ -154,30 +157,40 @@ stat_func_pointers = [
 freq_domain_func_pointers = [()]
 
 #operates in a window
-def statisticsForAllColoumns(timeWindow, shortTimeWindows, windowType):
+def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = 'long'):
     '''
     :param timeWindow:
     :param shortTimeWindows:
     :param windowType:
-    :return:
+    :return: a list of names and an np.array of values
     '''
+    # timeWindow = np.reshape(np.arange(6), (2,3))
     if windowHasFirstRow(timeWindow):
         origNames = timeWindow[1]
         newFirstRow = getFieldNames(origNames, [touple[1] for touple in stat_func_pointers])
-        rows = [newFirstRow]
-    else: rows = []
+    else: newFirstRow = None
 
     row = []
+    start_index = int(newFirstRow)
+    for column in np.array(timeWindow[start_index:]).T:
+        for func, _ in stat_func_pointers:
+            row.append(np.array(func(np.array(column))))
+    row = np.array(row)
+    return newFirstRow, row
+
+#TODO: revive whe we learn to write pyhon
+'''
+   row = []
     for column in timeWindow[1:].T:
-        row += [func(column) for func in stat_func_pointers] # put the calculated fields in the correct row of result
+        # new_row = [func(column) for func, _ in stat_func_pointers] # put the calculated fields in the correct row of result
+        for func, _ in stat_func_pointers:
+            values = func(column)
+            row += values
+    row.append(row)
+    return np.array(row)
+    '''
 
-    rows.append(row)
-    return np.array(rows)
 
-
-
-def statsForLongTimeWindow():
-    return
 
 def statsForLongTimeWindow():
     return

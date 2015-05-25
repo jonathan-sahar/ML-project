@@ -67,4 +67,4 @@ psd_D = {
     "low": 1,
     "mid": 3,
     "high":6
-}__author__ = 'Jonathan'
+}
