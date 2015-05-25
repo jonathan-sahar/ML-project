@@ -96,7 +96,7 @@ def addLabels(dirname, filenames):
         outPath = os.path.join(dirname,'output.csv')
         # avoid junk files
         name, extension = os.path.splitext(filePath)
-        if extension != ".csv" or fileName[0] == '.' or fileName[:7] == 'divided':
+        if extension != ".csv" or fileName[0:9] != 'hdl_audio' or fileName[:7] == 'divided':
             continue
         # get subject's name with regex, check if sick or control
         match_exp = re.compile('([A-Z]+)')
@@ -182,6 +182,7 @@ if __name__ == "__main__":
 
     writer = csv.writer(dataFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
     writer.writerows(dataTable)
+    dataFile.close()
 
     print('time to delete {}'.format(badRecordings))
     print('time to remain {}'.format(goodRecordings))

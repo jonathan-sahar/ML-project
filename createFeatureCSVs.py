@@ -3,41 +3,56 @@ import os
 import csv #TODO make sure doesn't use csv because in featureCalculationFunctions
 import re
 from constants import *
-from featureCalculationFunctions import *
+import numpy as np
+#from featureCalculationFunctions import *
 
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
+    #print dataWindow
     row = []
     for func in aggregators:
         if windowType == 'short':
             result = func(dataWindow)
+            #print result
         elif windowType == 'long':
             result = func(dataWindow, aggregatedWindows)
         else: #windowType == 'entire'
             result = func(dataWindow, aggregatedWindows)
+        #print result
         row += result
+        #x = row+result
+        #print x
+
     return row
 
 
 def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWindows):
-    assert len(dataWindows) == len(aggregatedWindows)
+    print dataWindows
     table = []
-    aggIter = iter(aggregatedWindows)
-    for timeWindow in dataWindows:
-        row = aggregate(aggregatorsList, windowType, timeWindow, aggIter.next()) #TODO eager or lazy evaluation in Python?
-        table.append(row)
+    if windowType == 'short':
+        for timeWindow in dataWindows:
+            row = aggregate(aggregatorsList, windowType, timeWindow, None)
+            table.append(row)
+    else:
+        assert len(dataWindows) == len(aggregatedWindows)
+        aggIter = iter(aggregatedWindows)
+        for timeWindow in dataWindows:
+            item = aggIter.next()
+            row = aggregate(aggregatorsList, windowType, timeWindow, item)
+            table.append(row)
     return table
 
 
-def divideToWindows(filePath, windowLength):
-    dataFile = open(filePath)
+def divideToWindows(dataMatrix, windowLength):
+    # np.array(dataMatrix).shape
+    if dataMatrix == []:
+        return []
     windows =[]
     window = []
-    reader = csv.reader(dataFile)
     lineCounter = 0
-    for row in reader:
+    for row in dataMatrix:
         lineCounter +=1
-        window.append(reader.next())
+        window.append(row)
         if lineCounter == windowLength:
             lineCounter = 0
             windows.append(window)
@@ -51,13 +66,16 @@ def readFile(filePath):
     reader = csv.reader(newFile)
     for row in reader:
         allLines.append(row)
-    return
+    return allLines
+
+def foo(valueList):
+    return [3]
 
 if __name__ == "__main__":
     #define the aggregators for each table
-    aggregatorsListLong = []
-    aggregatorsListShort = []
-    aggregatorsListEntire = []
+    aggregatorsListLong = [foo]
+    aggregatorsListShort = [foo]
+    aggregatorsListEntire = [foo]
 
     #initialize
     dataMatrix = []
@@ -66,8 +84,9 @@ if __name__ == "__main__":
 
     #create 5 sec per line table, per person
     for patient in PATIENTS:
-        shortAggregatedFile = open(SHORT_TABLE_FILE_PATH+'_'+patient, 'w')
-        dataMatrix = readFile(DATA_TABLE_FILE_PATH+'_'+patient)
+        dataMatrix = readFile(DATA_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv')
+        shortAggregatedFile = open(SHORT_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
+        #np.array(dataMatrix).shape
         dataSubWindows = divideToWindows(dataMatrix, SHORT_TIME_WINDOW)
         aggregatedSubWindows = createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None) #TODO check if easy to return the table
         writer = csv.writer(shortAggregatedFile, lineterminator='\n')
@@ -75,7 +94,7 @@ if __name__ == "__main__":
 
     #create 5 min per line table
     for patient in PATIENTS:
-        longAggregatedFile = open(LONG_TABLE_FILE_PATH+'_'+patient, 'w')
+        longAggregatedFile = open(LONG_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
         #DATA_LEN/LONG_TIME_WINDOW WINDOWS
         dataWindows = divideToWindows(dataMatrix, LONG_TIME_WINDOW)
         #(DATA_LEN/SHORT_TIME_WINDOW)/(LONG_TIME_WINDOW/SHORT_TIME_WINDOW) WINDOWS = DATA_LEN/LONG_TIME
@@ -87,7 +106,7 @@ if __name__ == "__main__":
     #create patient per line table
     #patientWindowsList = divideToPatients(dataMatrix, LongWindowsMatrix) not necesssary any more
     for patient in PATIENTS:
-        entireAggregatedFile = open(ENTIRE_TABLE_FILE_PATH+'_'+patient, 'w')
+        entireAggregatedFile = open(ENTIRE_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
         aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', dataMatrix, aggregatedWindows)
         writer = csv.writer(entireAggregatedFile, lineterminator='\n')
         writer.writerows(aggregatedAll)
