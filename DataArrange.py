@@ -67,17 +67,21 @@ def makeSameLength(accelLines,audioLines):
     return (accelLines, audioLines)
 
 def makeSameStartTime(accelLines,audioLines):
-    if len(accelLines) < 2 or len(audioLines) < 2:
+    if len(accelLines) < 4 or len(audioLines) < 4:
         return ([],[])
     accelLine = accelLines[1]
     audioLine = audioLines[1]
     acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
     audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
     while acceldateObj > audiodateObj:
+        if len(audioLines) < 4:
+            break
         audioLines = [audioLines[0]]+audioLines[2:]
         audioLine = audioLines[1]
         audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
     while audiodateObj > acceldateObj:
+        if len(audioLines) < 4:
+            break
         accelLines = [accelLines[0]]+accelLines[2:]
         accelLine = accelLines[1]
         acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
