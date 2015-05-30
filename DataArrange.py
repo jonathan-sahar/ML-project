@@ -4,14 +4,15 @@ import os
 import shutil
 from datetime import datetime
 from constants import *
+from structuredDataConstants import accl_fields, audio_fields
 import numpy as np
 import re
 import csv
-
-
+from createFeatureCSVs import readFileAsIs, readFileToFloat
 
 
 def deleteInvalidData(dirname, filenames):
+    global subFolderCounter
     delete = False
     #both initiated to True in case they are not found in the folder at all
     isValidAcclTable = True
@@ -44,15 +45,14 @@ def deleteInvalidData(dirname, filenames):
             #print "after audio"
             #print len(audioLines)
     #if isValidAcclTable or isValidAudioTable is false, the the data is 'foul'
+
     tablesContainGaps = not (isValidAcclTable and isValidAudioTable)
     (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
     (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
     #print "printing from deleteInvalidData:"
-    # print accelLines
-    # print audioLines
 
     if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True):
-        if (delete == True) and (SubfolderCounter>0):
+        if (delete == True) and (subfolderCounter>0):
            shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
     else:
@@ -103,7 +103,6 @@ def addLabels(dirname, filenames):
         if extension != ".csv" or fileName[:9] != 'hdl_audio' or fileName[:7] == 'divided': #TODO improve files name
             continue
         # get subject's name with regex, check if sick or control
-        print fileName
         match_exp = re.compile('([A-Z]+)')
         subject_name = match_exp.search(fileName).group(0)
         if name in CONTROL:
@@ -115,19 +114,21 @@ def addLabels(dirname, filenames):
         # open file for writing
         with open(filePath, 'r') as input_file:
             reader = csv.reader(input_file)
-            row0 = reader.next()
-            row0.append('Is sick')
-            row0.append('Patient')
-            all_lines.append(row0)
-            for row in reader:
-                row.append(str(sick))
-                row.append(subject_name)
-                all_lines.append(row)
-
+            lines = [row for row in reader]
+            lines[0] += ['Is sick','Patient']
+            [line.extend([str(sick), subject_name]) for line in lines]
+            # for row in reader:
+            #     all_lines.append(row)
+            # row0 = reader.next()
+            # row.append(str(sick))
+            # row.append(subject_name)
+            # row0.append()
+            # row0.append()
+            # all_lines.append(row0)
         # open file for writing
         with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
-            writer.writerows(all_lines)
+            writer.writerows(lines)
 
 
 def validTable(dateColumn, filePath):
@@ -154,6 +155,7 @@ def validTable(dateColumn, filePath):
             lastTime = dateObj
         if (dateObj - lastTime).seconds > 2 and (dateObj - twoLastTime).seconds > 2:
             valid = False
+            valid = True
         twoLastTime = lastTime
         lastTime = dateObj
         lineCounter+=1
@@ -163,19 +165,32 @@ def validTable(dateColumn, filePath):
         return ([], False, lineCounter)
     return (lines, True, lineCounter)
 
-if __name__ == "__main__":
+#TODO: finish re-writing, discuss logic
+def _validTable(removeMe, filePath):
+    data = readFileAsIs(filePath)
+    diffSecs = [float(v) for v in data[:, accl_fields["diffSecs"]]]
+    deltas_1 = zip(diffSecs[:-1], diffSecs[1:])
+    deltas_2 = zip(diffSecs[:-2], diffSecs[2:])
+    offByOne = np.array([(b - a > MAX_TIME_DIFF) for a,b in deltas_1])
+    offByTwo = np.array([(b - a > MAX_TIME_DIFF) for a,b in deltas_2])
+    if offByOne.any() or offByTwo.any():
+        return ([], False, len(diffSecs))
+    else:
+        return (data, True, len(diffSecs))
 
 
-    dataFile = open(DATA_TABLE_FILE_PATH, 'w')
+def arrangeData(rootDir = ROOT_DATA_FOLDER, outputPath = DATA_TABLE_FILE_PATH):
+    dataFile = open(outputPath, 'w')
     goodRecordings = 0
     badRecordings = 0
-    SubfolderCounter = 0
+    global subfolderCounter
+    subfolderCounter = 0 # TODO: eliminate need for global
     dataTable = []
 
-    for dirname, dirnames, filenames in os.walk('C:\ML\parkinson\FIRSTDATA'):
-        if SubfolderCounter == 0:
+    for dirname, dirnames, filenames in os.walk(rootDir):
+        if subfolderCounter == 0:
             #don't want to delete root
-            SubfolderCounter+=1
+            subfolderCounter+=1
             continue
         #adding labels
         addLabels(dirname, filenames)
@@ -189,10 +204,10 @@ if __name__ == "__main__":
     writer.writerows(dataTable)
     dataFile.close()
 
-    print('time to delete {}'.format(badRecordings))
-    print('time to remain {}'.format(goodRecordings))
-    print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
+    # print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
 
+if __name__ == "__main__":
+    arrangeData()
 
 '''
 rows = []

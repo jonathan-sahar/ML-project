@@ -12,23 +12,25 @@ PATIENTS = SICK_PATIENTS+CONTROL
 UNDERLINES_BEFORE_NAME = 2
 DATA_LEN = 1000000000
 
+ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 DATA_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\DATAFile.csv'
 SHORT_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\SHORTFile.csv'
 LONG_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\LONGFile.csv'
 ENTIRE_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\ENTIREFile.csv'
 NUM_COEFFS = 5
 
-FREQ_H = 5
+FREQ_H = 5 #Hz
 FREQ_L = 10
 
+MAX_TIME_DIFF = 2 #seconds
 
 delete = False
 
 
 import logging
-LOG_LEVEL = 'DEBUG'
-numeric_level = getattr(logging, LOG_LEVEL, None)
-logging.basicConfig(level=numeric_level)
+# LOG_LEVEL = 'DEBUG'
+# numeric_level = getattr(logging, LOG_LEVEL, None)
+# logging.basicConfig(level=numeric_level)
 
 
 

@@ -23,11 +23,9 @@ def getFieldNames(origNames, modifiers):
     return  np.array(newFields)
 
 def windowHasFirstRow(timeWindow):
-    match_exp = re.compile('([^\d]+)')
-    print timeWindow
-    print timeWindow[0,0]
-    firstFieldContents = timeWindow[0,0]
-    return match_exp.search(firstFieldContents) == None
+    match_exp = re.compile('([A-Za-z]+)')
+    firstFieldContents = str(timeWindow[0][0])
+    return (match_exp.search(firstFieldContents) != None)
 
 
 def _mode(values): return stats.mode(values)[0][0]
@@ -57,20 +55,24 @@ def _per_window_mean_TKEO(a):
 def _zero_crossing_rate(a):
     positive = a > 0
     negative = ~positive
-    return ((positive[:-1] & negative[1:]) | (negative[:-1] & positive[1:])).nonzero()
-
+    v = ((positive[:-1] & negative[1:]) | (negative[:-1] & positive[1:]))
+    w = np.where(v)
+    return [len(w)]
 
 #operates on sub windows
 def samplesInFreqRange(window):
     fields = [accl_fields["x.PSD."+ str(psd_D[energy_type])] for energy_type in ['high', 'med', 'low']]
-    freqData = np.array(window[:, fields])
     if windowHasFirstRow(window):
         origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
         firstRow = getFieldNames(origNames, ['is_freq_in_range '])
         rows = firstRow
-        freqData = freqData[1:,:]
+        window = np.array(window[1:][:])
     else:
+        window = np.array(window[:][:])
         rows = []
+
+    print window.shape
+    freqData = window[:,fields]
     means = freqData.mean(0)
     rows.append((FREQ_L < means) & (means < FREQ_H))
 
@@ -78,30 +80,20 @@ def samplesInFreqRange(window):
 
 
 # operates on windows
-def subWindowsInFreqRange(window, energy_type):
+def numSubWindowsInFreqRange(window, energy_type):
     fields = [accl_fields["x.PSD."+ str(psd_D[energy_type]) + '_is_freq_in_range'] for energy_type in ['high', 'med', 'low']]
     freqData = np.array(window[:, fields])
     counts  = [len(np.where(column == 'True')) for column in freqData.T]
-
-    if windowHasFirstRow(window):
-        origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
-        firstRow = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
-        rows = firstRow
-    else:
-        rows = []
-
+    origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
+    firstRow = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
+    rows = firstRow
     rows.append(counts)
     return np.array(rows)
-
-    psd = str(psd_D[energy_type])
-    freqData = np.array(window[:, accl_fields["x.PSD."+ psd + ""]])
-    numSamplesInRange =  len(np.where((FREQ_H < freqData) & (freqData < FREQ_H)))  #TODO: decide on range of frequencies
-    return
 
 
 
 #operates on entire data
-def waveletCompressForAllColoumns(timeWindow, shortTimeWindows, windowType):
+def waveletCompressForAllColoumns(timeWindow, shortTimeWindows = None, windowType = 'long'):
     '''
     :param timeWindow:
     :param shortTimeWindows:
@@ -109,23 +101,28 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows, windowType):
     :return: matrix as a list of lists
     '''
     rows = []
-    origNames = timeWindow[1]
-    newFirstRow = getFieldNames(origNames, ['DCT_coeff_'+ str(i) for i in range(1,NUM_COEFFS + 1)])
-    rows.append(newFirstRow)
-
-    coefients = np.array([fft.dct(column) for column in timeWindow[1:].T])
-    coefients_means = np.mean(np.array(coefients), 0)
-    sorted_indices = sorted(range(len(coefients_means)), key= lambda x: coefients_means[x], reverse= True)
+    fieldNames = timeWindow.dtype.names
+    headers = getFieldNames(fieldNames, ['DCT_coeff_'+ str(i) for i in range(1,NUM_COEFFS + 1)])
+    print "headers: ", len(fieldNames)
+    coefficients = np.array([fft.dct(timeWindow[field]) for field in fieldNames]).T
+    print "coeff: ", coefficients.shape
+    coefficient_means = np.mean(np.array(coefficients), 0)
+    print "coeff means: ", coefficient_means.shape
+    sorted_indices = sorted(range(len(coefficient_means)), key= lambda x: coefficient_means[x], reverse= True)
+    print "sorted idx: ", len(sorted_indices)
     top_indices = sorted_indices[:NUM_COEFFS]
+    print "top idx: ", top_indices
     del sorted_indices
-    mask = np.zeros(len(coefients))
+    mask = np.zeros(len(fieldNames), dtype = bool)
+    print "mask: ", mask.shape
+
     mask[top_indices] = True
     # The following is the freq-domain representation after compression: compressed by taking the on-average-best coefficients
-    top_coeffients = coefients[mask, :]
-    return np.vstack((rows,np.ravel(top_coeffients)))
+    top_coefficients = coefficients.T[mask, :]
+    return headers,np.ravel(top_coefficients)
 
     # TODO: restore when we understand wavelet transform
-    # # lists of lists of coeffients
+    # # lists of lists of coefficients
     # app_coefients = []
     # detail_coefients = []
     # for column in timeWindow[1:].T:
@@ -149,7 +146,6 @@ stat_func_pointers = [
                      (stats.kurtosis, 'kurtosis'),
                      (np.nanmedian, 'median'),
                      (_mode, 'mode'),
-                     (_entropy, 'entropy'),
                      (_per_window_mean_TKEO, 'mean_TKEO'),
                      (_zero_crossing_rate, 'zero_crossings')
                      ] #TODO add more functionsdc
@@ -164,31 +160,17 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
     :param windowType:
     :return: a list of names and an np.array of values
     '''
-    # timeWindow = np.reshape(np.arange(6), (2,3))
-    if windowHasFirstRow(timeWindow):
-        origNames = timeWindow[1]
-        newFirstRow = getFieldNames(origNames, [touple[1] for touple in stat_func_pointers])
-    else: newFirstRow = None
-
-    row = []
-    start_index = int(newFirstRow)
-    for column in np.array(timeWindow[start_index:]).T:
-        for func, _ in stat_func_pointers:
-            row.append(np.array(func(np.array(column))))
+    names = timeWindow.dtype.names
+    fieldNames = getFieldNames(names, [touple[1] for touple in stat_func_pointers])
+    row = np.atleast_2d([])
+    columns = [timeWindow[fieldName] for fieldName in timeWindow.dtype.names]
+    for column in columns:
+        # print column
+        features_from_col = [np.array((func(column))) for func, _ in stat_func_pointers]
+        v= np.array([features_from_col])
+        row = np.hstack((row, v))
     row = np.array(row)
-    return newFirstRow, row
-
-#TODO: revive whe we learn to write pyhon
-'''
-   row = []
-    for column in timeWindow[1:].T:
-        # new_row = [func(column) for func, _ in stat_func_pointers] # put the calculated fields in the correct row of result
-        for func, _ in stat_func_pointers:
-            values = func(column)
-            row += values
-    row.append(row)
-    return np.array(row)
-    '''
+    return fieldNames, row
 
 
 
