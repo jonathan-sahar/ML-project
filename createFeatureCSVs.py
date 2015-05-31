@@ -26,9 +26,6 @@ def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
             header, data = func(dataWindow, aggregatedWindows)
         else: #windowType == 'entire'
             header, data = func(dataWindow, aggregatedWindows)
-        print len(header)
-        print data.shape
-        print type(data)
         headers += header
         aggregatedWindow = np.hstack((aggregatedWindow, data))
 
@@ -61,8 +58,7 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
             table.append(row)
     dt = zip(header, len(header)*['f4']) # TODO: set the field type in a constant. are 4 bytes enough?
     rows = [tuple(row) for row in table]
-    print dt
-    ret = np.array(rows, dtype=dt`)
+    ret = np.array(rows, dtype=dt)
     return ret
 
 
