@@ -8,41 +8,7 @@ import matplotlib.pyplot as plt
 import itertools
 import re
 
-def plot(train_error, test_error, title, params, x_label, y_label, filename):
-    print train_error
-    fig = plt.figure(figsize=[20,10])
-    txt = fig.text(0.55, 0.95, title, fontsize = 18, horizontalalignment='center')
-    txt = fig.text(0.55, 0.92, params, fontsize = 16, horizontalalignment='center')
-    axes_arr =[]
-    Xs = []
-    errors = []
-    colors = ['b', 'r']
-    Xs.append(range(1,10*len(train_error), 10))
-    Xs.append(range(1,10*len(test_error), 10))
-
-    errors.append(train_error)
-    errors.append(test_error)
-
-    for i in range(1,3,1):
-        axes_arr.append(plt.subplot(2,1,i))
-
-    for i, str in enumerate(['Training', 'Test']):
-        axes_arr[i].set_title('Error on {} Data'.format(str), fontsize=14, fontweight='bold')
-        axes_arr[i].set_xlabel(x_label)
-        axes_arr[i].set_ylabel(y_label)
-        axes_arr[i].plot(Xs[i],errors[i], colors[i])
-        axes_arr[i].grid()
-
-
-    plt.subplots_adjust(left = 0.24, wspace = 0.2, hspace = 0.4, \
-    bottom = 0.05, top = 0.86)
-
-    # plt.tight_layout()
-    # plt.show()
-    #savefig(filename, bbox_inches='tight')
-
-
-
+'''
 def readData():
     filePath = 'C:\ML\parkinson\orEstimation\SVM_IMPUT.csv'
     newFile = open(filePath, 'r')
@@ -54,15 +20,32 @@ def readData():
         line = [float(value) for value in row if not match.search(value)]
         #print("line (floats): {}".format(line))
         allLines.append(line)
+    print allLines
+    return allLines
+'''
+
+def readData():
+    filePath = 'C:\ML\parkinson\orEstimation\SVM_IMPUT.csv'
+    newFile = open(filePath, 'r')
+    reader = csv.reader(newFile)
+    allLines = []
+    for row in reader:
+        line = []
+        for item in row:
+            line.append(float(item))
+        #line = [float(value) for value in row if not match.search(value)]
+        #print("line (floats): {}".format(line))
+        allLines.append(line)
     #print allLines
     return allLines
 
-
 def pred(X):
     error = 0
+    counter = 0
     for i,j in itertools.product(range(0,16), repeat=2):
-        if i == j:
+        if i >= j:
             continue
+        counter += 1
         '''
         mask = np.ones(16,dtype=bool)
         print mask
@@ -71,6 +54,7 @@ def pred(X):
         trainList = list(X)
         testlist = [trainList.pop(max(i,j))]
         testlist.append(trainList.pop(min(i,j)))
+        #print testlist
         trainLabel = list(Y)
         testLabel = [trainLabel.pop(max(i,j))]
         testLabel.append(trainLabel.pop(min(i,j)))
@@ -83,23 +67,24 @@ def pred(X):
         #print trainLabel
         clf.fit(trainList, trainLabel)
         results = clf.predict(testlist)
-        #print results
+        print results
         for index in range(0,2):
             if results[index] != testLabel[index]:
                 error += 1
-    return error
+                #print error
+    return float(error)/float(counter*2)
 
 if __name__=='__main__':
     data = readData()
-    print data
-    data = np.array(data)
-    print data
+    #print data
+    dataArray = np.array(data)
+    #print data
     features = ['diffSecs','N.samples','x.mean','x.absolute.deviation','x.standard.deviation','x.max.deviation','x.PSD.1','x.PSD.3','x.PSD.6','x.PSD.10','y.mean','y.absolute.deviation','y.standard.deviation','y.max.deviation','y.PSD.1','y.PSD.3','y.PSD.6','y.PSD.10','z.mean','z.absolute.deviation','z.standard.deviation','z.max.deviation','z.PSD.1','z.PSD.3','z.PSD.6','z.PSD.10','diffSecs','absolute.deviation','standard.deviation','max.deviation','MFCC.1','MFCC.2','MFCC.3','MFCC.4','MFCC.5','MFCC.6','MFCC.7','MFCC.8','MFCC.9','MFCC.10','MFCC.11','MFCC.12']
     #print data
     error_est = []
     Y = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
     for k in range(0,27):
-        X = data[:,k]
+        X = dataArray[:,k]
         tmpList = list(X)
         X = []
         for item in tmpList:
@@ -110,12 +95,14 @@ if __name__=='__main__':
         error_est.append((feature,error))
 
     error = 0
+    counter = 0
     X = data[0:27]
     #for pair in itertools.product(X, repeat=2):
     for i,j in itertools.product(range(0,16), repeat=2):
         #print "hi"
-        if i == j:
+        if i >= j:
             continue
+        counter += 1
         trainList = list(X)
         testlist = [trainList.pop(max(i,j))]
         testlist.append(trainList.pop(min(i,j)))
@@ -129,8 +116,10 @@ if __name__=='__main__':
         for i in range(0,2):
             if results[i] != testLabel[i]:
                 error += 1
-    error_est.append(('All',error))
-    print error_est
+    error_est.append(('All',float(error)/float(counter*2)))
+    a = sorted(error_est, key=lambda x:x[1])
+    for e in  error_est:
+        print e
 '''
     for k in range(27,42):
         print k
