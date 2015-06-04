@@ -29,34 +29,29 @@ def deleteInvalidData(dirname, filenames):
         filePath = os.path.join(dirname,fileName)
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
-            #print 'processing accl'
-            (accelLines, isValidAcclTable, accelLineCounter) = validTable(26, filePath)
+            (accelLines, isValidAcclTable, accelLineCounter, acclHeader) = validTable(26, filePath)
             #making sure there are not remain rows for aggregation
             #del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
-            #print "after accel"
-            #print(len(accelLines))
+
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
-            #print 'processing audio'
-            (audioLines, isValidAudioTable, audioLineCounter) = validTable(20, filePath)
+            (audioLines, isValidAudioTable, audioLineCounter, audioHeader) = validTable(20, filePath)
             #making sure there are not remain rows for aggregation
-            #print "be  fore audio"
-            #print len(audioLines)
             #del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
-            #print "after audio"
-            #print len(audioLines)
-    #if isValidAcclTable or isValidAudioTable is false, the the data is 'foul'
 
     tablesContainGaps = not (isValidAcclTable and isValidAudioTable)
     (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
     (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
-    #print "printing from deleteInvalidData:"
+    if isValidAcclTable and isValidAudioTable:
+        logger.debug("data length - after: {}, {}".format(len(accelLines), len(audioLines)))
 
     if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True):
         if (delete == True) and (subfolderCounter>0):
-           shutil.rmtree(dirname)
+            shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
     else:
-        lines = mergeLists(accelLines, audioLines)
+        headers = acclHeader[0] + audioHeader[0]
+        data = mergeLists(accelLines, audioLines)
+        lines = [headers] + data
         return (lines, accelLineCounter, 0)
 
 def makeSameLength(accelLines,audioLines):
@@ -96,54 +91,45 @@ def mergeLists(leftList, rightList):
 
 def addLabels(dirname, filenames):
     for fileName in filenames:
-        filePath = os.path.join(dirname,fileName)
-        #outPath = os.path.join(dirname,'output.csv')
         # avoid junk files
+        filePath = os.path.join(dirname,fileName)
         name, extension = os.path.splitext(filePath)
-        if extension != ".csv" or fileName[:9] != 'hdl_audio' or fileName[:7] == 'divided': #TODO improve files name
+        if extension != ".csv" or os.path.getsize(filePath) < 4000 or fileName[:9] != 'hdl_audio' or fileName[:7] == 'divided': #TODO improve files name
             continue
-        # get subject's name with regex, check if sick or control
+
+        # get subject's name using regex, check if sick or control
         match_exp = re.compile('([A-Z]+)')
         subject_name = match_exp.search(fileName).group(0)
-        if name in CONTROL:
+        if subject_name in CONTROL:
             sick = 0
         else:
             sick = 1
-        all_lines = []
 
+        lines = []
         # open file for writing
         with open(filePath, 'r') as input_file:
             reader = csv.reader(input_file)
-            lines = [row for row in reader]
-            lines[0] += ['Is sick','Patient']
-            [line.extend([str(sick), subject_name]) for line in lines]
-            # for row in reader:
-            #     all_lines.append(row)
-            # row0 = reader.next()
-            # row.append(str(sick))
-            # row.append(subject_name)
-            # row0.append()
-            # row0.append()
-            # all_lines.append(row0)
-        # open file for writing
+            # headers = reader.next()
+            lines += ([row for row in reader])
+            lines[0].extend(['Is sick','Patient'])
+            [line.extend([str(sick), subject_name]) for line in lines[1:]]
+
+
         with open(filePath, 'w') as out_file:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerows(lines)
 
-
 def validTable(dateColumn, filePath):
-#TODO: add the first row (fields) if it's the first call to validate
+    #TODO: add the first row (fields) if it's the first call to validate
     valid = True
-    lineCounter = 0
-    lines = []
     fileHandle = open(filePath, 'r')
     reader = csv.reader(fileHandle)
+    header = [reader.next()]
+
+    lines = []
+    lineCounter = 1
 
     for line in reader:
-        #skip titles
-        if lineCounter == 0:
-            lineCounter+=1
-            continue
         try:
             dateObj = datetime.strptime(line[dateColumn], '%Y-%m-%d %H:%M:%S')
         except ValueError:
@@ -155,20 +141,23 @@ def validTable(dateColumn, filePath):
             lastTime = dateObj
         if (dateObj - lastTime).seconds > 2 and (dateObj - twoLastTime).seconds > 2:
             valid = False
-            valid = True
         twoLastTime = lastTime
         lastTime = dateObj
         lineCounter+=1
         lines.append(line)
-
-    if valid == False:
-        return ([], False, lineCounter)
-    return (lines, True, lineCounter)
+    if valid == False: # TODO: is it ok we return empty lines when valid?
+        return ([], False, lineCounter, header)
+    return (lines, True, lineCounter, header)
 
 #TODO: finish re-writing, discuss logic
 def _validTable(removeMe, filePath):
-    data = readFileAsIs(filePath)
-    diffSecs = [float(v) for v in data[:, accl_fields["diffSecs"]]]
+    valid = True
+    if os.path.getsize(filePath) < 4000:
+        return ([], False, 0)
+
+    data = readFileToFloat(filePath)
+    print filePath
+    diffSecs = data['diffSecs']
     deltas_1 = zip(diffSecs[:-1], diffSecs[1:])
     deltas_2 = zip(diffSecs[:-2], diffSecs[2:])
     offByOne = np.array([(b - a > MAX_TIME_DIFF) for a,b in deltas_1])
@@ -179,8 +168,11 @@ def _validTable(removeMe, filePath):
         return (data, True, len(diffSecs))
 
 
-def arrangeData(rootDir = ROOT_DATA_FOLDER, outputPath = DATA_TABLE_FILE_PATH):
-    dataFile = open(outputPath, 'w')
+def arrangeData(rootDir = ROOT_DATA_FOLDER, outputDir = UNIFIED_TABLES_PATH):
+    try:
+        os.mkdir(outputDir)
+    except WindowsError:
+        pass
     goodRecordings = 0
     badRecordings = 0
     global subfolderCounter
@@ -199,12 +191,11 @@ def arrangeData(rootDir = ROOT_DATA_FOLDER, outputPath = DATA_TABLE_FILE_PATH):
         goodRecordings += goodPart
         badRecordings += badPart
         dataTable += table
-
+    dataFilePath = os.path.join(outputDir, "unified_table.csv")
+    dataFile = open(dataFilePath, 'w')
     writer = csv.writer(dataFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
     writer.writerows(dataTable)
     dataFile.close()
-
-    # print 'percentage to delete'+str((float(badRecordings)/(float(goodRecordings+badRecordings))))
 
 if __name__ == "__main__":
     arrangeData()

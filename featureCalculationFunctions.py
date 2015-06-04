@@ -1,17 +1,15 @@
 __author__ = 'Jonathan'
+import re
 import numpy as np
+from itertools import product
+
 import scipy.stats as stats
 import scipy.fftpack as fft
-import csv
-import pywt
-import re
-
+from pyeeg import dfa
 from entropy import entropy_ci
+
 from constants import *
 from structuredDataConstants import accl_fields, audio_fields, psd_D
-from pyeeg import dfa
-from itertools import *
-from collections import deque
 
 def getFieldNames(origNames, modifiers):
     '''
@@ -143,7 +141,6 @@ stat_func_pointers = [
                      (stats.tstd, 'std'),
                      (stats.skew, 'skew'),
                      (stats.kurtosis, 'kurtosis'),
-                     (stats.kurtosis, 'kurtosis'),
                      (np.nanmedian, 'median'),
                      (_mode, 'mode'),
                      (_per_window_mean_TKEO, 'mean_TKEO'),
@@ -160,10 +157,10 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
     :param windowType:
     :return: a list of names and an np.array of values
     '''
-    names = timeWindow.dtype.names
+    names = [name for name in timeWindow.dtype.names if not name == "Is Sick"]
     fieldNames = getFieldNames(names, [touple[1] for touple in stat_func_pointers])
     row = np.atleast_2d([])
-    columns = [timeWindow[fieldName] for fieldName in timeWindow.dtype.names]
+    columns = [timeWindow[fieldName] for fieldName in names]
     for column in columns:
         # print column
         features_from_col = [np.array((func(column))) for func, _ in stat_func_pointers]

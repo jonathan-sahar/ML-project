@@ -57,7 +57,7 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
             _, row = aggregate(aggregatorsList, windowType, timeWindow, item)
             table.append(row)
     dt = zip(header, len(header)*['f4']) # TODO: set the field type in a constant. are 4 bytes enough?
-    rows = [tuple(row) for row in table]
+    rows = [tuple(list(row[0])) for row in table]
     ret = np.array(rows, dtype=dt)
     return ret
 
@@ -102,21 +102,11 @@ def readFileToFloat(filePath):
     newFile = open(filePath, 'r')
     data = np.genfromtxt(filePath, dtype=float, delimiter=',', names = True, case_sensitive=True)
     field_names = np.array(data.dtype.names)
-    r = re.compile(r'(time.*|patient.*)')
+    r = re.compile(r'(.*time.*|.*patient.*)',re.IGNORECASE)
     vmatch = np.vectorize(lambda x:bool(r.match(x)))
     mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
     return data[field_names[mask]]
 
-    # reader = csv.reader(newFile)
-    # headers = reader.next()
-    # match_date = re.compile('(\d+\:\d+\:\d+)')
-    # match_strings = re.compile('([A-Za-z]+)')
-    # rows = np.atleast_1d([])
-    # for row in reader:
-    #     # line = [getValue(x) for x in row]
-    #     line = [float(value) for value in row if not match_date.search(value) and not match_strings.search(value)]
-    #     allLines.append(line)
-    # return allLines
 
 def readFileAsIs(filePath):
     newFile = open(filePath, 'r')
@@ -125,32 +115,49 @@ def readFileAsIs(filePath):
     newFile.close()
     return allLines
 
-if __name__ == "__main__":
+def createFeatures(outputDir = UNIFIED_TABLES_PATH):
     #define the aggregators for each table
     aggregatorsListLong = []
     aggregatorsListShort = []
     aggregatorsListEntire = []
 
     #initialize
-    dataMatrix = []
+    dataMatrix = dict()
+    labelsMatrix = dict()
     aggregatedSubWindows = dict()
     aggregatedWindows = []
 
     #create 5 sec per line table, per person
-    for patient in PATIENTS:
-        patientData = readFileToFloat(DATA_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv')
-        dataMatrix.append(patientData)
-        shortAggregatedFile = open(SHORT_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
+    for patient in PATIENTS_test: # TODO: change back to PATIENTS!
+        #read patient data, separate between actual features and labels
+        patientData = readFileToFloat(os.path.join(outputDir, "DATAFILE_" + patient + ".csv"))
+        names = np.array(patientData.dtype.names)
+        labelField = names[np.where((names == 'Is_Sick'))]
+        dataFields = names[np.where((names != 'Is_Sick'))]
+        patientLabels = patientData[[labelField]]
+        patientData = patientData[[dataFields]]
+
+        # insert data into matrix
+        labelsMatrix[patient] = patientLabels
+        dataMatrix[patient] = patientData
+
+        #divide to windows, and reduce/aggregate every window into a line.
         dataSubWindows = divideToWindows(patientData, SHORT_TIME_WINDOW) # dataSubWindows is a list of structured arrays.
         aggregatedSubWindows[patient] = (createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None)) #TODO check if easy to return the table
+
+        #write to patient file
+        shortAggregatedFile = open(SHORT_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
         writer = csv.writer(shortAggregatedFile, lineterminator='\n')
         patientTable = aggregatedSubWindows[patient] # every line is the reduction of a 5 sec window of current patient's data
         writer.writerow(patientTable.dtype.names)
         writer.writerows(patientTable)
 
+
+    # TODO: change path creation behavior in rest of file to match the above (using outputDir)
     #create 5 min per line table
     assert len(PATIENTS) == len(dataMatrix)
-    for patient, patientData in zip(PATIENTS, dataMatrix):
+    # for patient, patientData in zip(PATIENTS, dataMatrix):
+    for patient, patientData in dataMatrix.items():
         longAggregatedFile = open(LONG_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
 
         #DATA_LEN/LONG_TIME_WINDOW WINDOWS
@@ -175,3 +182,5 @@ if __name__ == "__main__":
         writer.writerow(aggregatedAll.dtype.names)
         writer.writerows(aggregatedAll)
 
+if __name__ == "__main__":
+    createFeatures()
