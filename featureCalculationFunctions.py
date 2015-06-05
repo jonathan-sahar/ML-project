@@ -169,7 +169,11 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
     row = np.array(row)
     return fieldNames, row
 
-
+#meant for 'entire' data
+def averageOnWindows(timeWindow, longTimeWindows = None, windowType = 'entire'):
+    columns = longTimeWindows.dtype.names
+    means = [np.array(timeWindow[column]).mean() for column in columns]
+    return columns, means
 
 def statsForLongTimeWindow():
     return

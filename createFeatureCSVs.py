@@ -117,15 +117,15 @@ def readFileAsIs(filePath):
 
 def createFeatures(outputDir = UNIFIED_TABLES_PATH):
     #define the aggregators for each table
-    aggregatorsListLong = []
-    aggregatorsListShort = []
-    aggregatorsListEntire = []
+    aggregatorsListLong = [statisticsForAllColoumns, waveletCompressForAllColoumns, numSubWindowsInFreqRange()]
+    aggregatorsListShort = [samplesInFreqRange]
+    aggregatorsListEntire = [statisticsForAllColoumns, waveletCompressForAllColoumns, averageOnWindows]
 
     #initialize
     dataMatrix = dict()
     labelsMatrix = dict()
     aggregatedSubWindows = dict()
-    aggregatedWindows = []
+    aggregatedWindows = dict()
 
     #create 5 sec per line table, per person
     for patient in PATIENTS_test: # TODO: change back to PATIENTS!
@@ -146,26 +146,25 @@ def createFeatures(outputDir = UNIFIED_TABLES_PATH):
         aggregatedSubWindows[patient] = (createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None)) #TODO check if easy to return the table
 
         #write to patient file
-        shortAggregatedFile = open(SHORT_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
+        shortAggregatedFile = open(os.path.join(outputDir, "SHORTFILE_" + patient + ".csv"), 'w')
         writer = csv.writer(shortAggregatedFile, lineterminator='\n')
         patientTable = aggregatedSubWindows[patient] # every line is the reduction of a 5 sec window of current patient's data
         writer.writerow(patientTable.dtype.names)
         writer.writerows(patientTable)
 
 
-    # TODO: change path creation behavior in rest of file to match the above (using outputDir)
     #create 5 min per line table
     assert len(PATIENTS) == len(dataMatrix)
     # for patient, patientData in zip(PATIENTS, dataMatrix):
     for patient, patientData in dataMatrix.items():
-        longAggregatedFile = open(LONG_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
+        longAggregatedFile = open(os.path.join(outputDir, "LONGFILE_" + patient + ".csv"), 'w')
 
         #DATA_LEN/LONG_TIME_WINDOW WINDOWS
         dataWindows = divideToWindows(patientData, LONG_TIME_WINDOW)
 
         #(DATA_LEN/SHORT_TIME_WINDOW)/(LONG_TIME_WINDOW/SHORT_TIME_WINDOW) WINDOWS = DATA_LEN/LONG_TIME
         subWindows = divideToWindows(aggregatedSubWindows[patient], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
-        aggregatedWindows.append(createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
+        aggregatedWindows[patient] = (createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
 
         writer = csv.writer(longAggregatedFile, lineterminator='\n')
         patientTable = aggregatedSubWindows[patient] # every line is the reduction of a 5 min window of current patient's data
@@ -174,10 +173,9 @@ def createFeatures(outputDir = UNIFIED_TABLES_PATH):
 
     #create patient per line table
     #patientWindowsList = divideToPatients(dataMatrix, LongWindowsMatrix) not necesssary any more
-    for patient in PATIENTS:
-        entireAggregatedFile = open(ENTIRE_TABLE_FILE_PATH[:-4]+'_'+patient+'.csv', 'w')
-        unifiedTable = np.vstack(tuple(dataMatrix))
-        aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', unifiedTable, aggregatedWindows)
+    for patient, patientData in dataMatrix.items():
+        entireAggregatedFile = open(os.path.join(outputDir, "ENTIREFILE_" + patient + ".csv"), 'w')
+        aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', patientData, aggregatedWindows[patient])
         writer = csv.writer(entireAggregatedFile, lineterminator='\n')
         writer.writerow(aggregatedAll.dtype.names)
         writer.writerows(aggregatedAll)
