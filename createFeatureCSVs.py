@@ -118,7 +118,7 @@ def readFileAsIs(filePath):
 def createFeatures(outputDir = UNIFIED_TABLES_PATH):
     #define the aggregators for each table
     aggregatorsListLong = [statisticsForAllColoumns, waveletCompressForAllColoumns, numSubWindowsInFreqRange()]
-    aggregatorsListShort = [samplesInFreqRange]
+    aggregatorsListShort = []
     aggregatorsListEntire = [statisticsForAllColoumns, waveletCompressForAllColoumns, averageOnWindows]
 
     #initialize

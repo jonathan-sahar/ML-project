@@ -29,6 +29,11 @@ ENTIRE_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\ENTIREFile.cs
 # LONG_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\LONGFile.csv'
 # ENTIRE_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\ENTIREFile.csv'
 
+NUMBER_OF_ENTIRE_FEATURES = 0
+NUMBER_OF_FIVE_MINUTES_FEATURES = 0
+NUMBER_OF_FOLDS = 120 #16 choose 2
+
+
 NUM_COEFFS = 5
 
 FREQ_H = 5 #Hz
