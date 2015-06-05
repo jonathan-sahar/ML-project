@@ -18,7 +18,19 @@ def getFieldNames(origNames, modifiers):
     :return: names of new fields: each field appended with all modifiers.
     '''
     newFields = [str(x) + '_' + str(y) for x,y in product(origNames, modifiers)]
-    return  np.array(newFields)
+    return  (newFields)
+
+def filter_fields_by_name(names, regex):
+    '''
+    :param names:
+    :param regex:
+    :return: an array of names that the regex matched on
+    '''
+    vmatch = np.vectorize(lambda x:bool(regex.match(x)))
+    mask = vmatch(names)
+    indices = np.where(mask)[0]
+    return np.array(names)[indices]
+
 
 def windowHasFirstRow(timeWindow):
     match_exp = re.compile('([A-Za-z]+)')
@@ -57,36 +69,32 @@ def _zero_crossing_rate(a):
     w = np.where(v)
     return [len(w)]
 
+def castStructuredArrayToRegular(arr):
+    return arr.view((np.float, len(arr.dtype.names)))
+
 #operates on sub windows
 def numSamplesInFreqRange(window):
-    fields = [accl_fields["x_PSD_"+ str(psd_D[energy_type])] for energy_type in ['high', 'med', 'low']]
-    if windowHasFirstRow(window):
-        origNames = ["x_PSD_"+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
-        firstRow = getFieldNames(origNames, ['is_freq_in_range '])
-        rows = firstRow
-        window = np.array(window[1:][:])
-    else:
-        window = np.array(window[:][:])
-        rows = []
-
-    print window.shape
-    freqData = window[:,fields]
+    names = window.dtype.names
+    r = re.compile(r'([a-z]_PSD_\d+\b)')
+    freqFields = filter_fields_by_name(window.dtype.names, r)
+    headers = getFieldNames(freqFields, ['is_in_freq_range '])
+    freqData = window[freqFields]
+    freqData = castStructuredArrayToRegular(freqData)
     means = freqData.mean(0)
-    rows.append((FREQ_L < means) & (means < FREQ_H))
-
-    return np.array(rows)
+    boolean_indicators = ((FREQ_L < means) & (means < FREQ_H))
+    return headers, boolean_indicators
 
 
 # operates on windows
-def numSubWindowsInFreqRange(window, energy_type):
-    fields = [accl_fields["x_PSD_"+ str(psd_D[energy_type]) + '_is_freq_in_range'] for energy_type in ['high', 'med', 'low']]
-    freqData = np.array(window[:, fields])
-    counts  = [len(np.where(column == 'True')) for column in freqData.T]
-    origNames = ["x_PSD_"+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
-    firstRow = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
-    rows = firstRow
-    rows.append(counts)
-    return np.array(rows)
+def numSubWindowsInFreqRange(window, aggregatedSubWindows):
+    r = re.compile(r'(.*is_in_freq_range.*)')
+    freqFields = filter_fields_by_name(aggregatedSubWindows.dtype.names, r)
+    counts  = [len(np.where(column == 'True')) for column in [aggregatedSubWindows[field] for field in freqFields]]
+
+    r = re.compile(r'([a-z]_PSD_\d+\b)')
+    origNames = filter_fields_by_name(aggregatedSubWindows.dtype.names, r)
+    headers = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
+    return headers, counts
 
 
 
@@ -101,19 +109,12 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows = None, windowTyp
     rows = []
     fieldNames = timeWindow.dtype.names
     headers = getFieldNames(fieldNames, ['DCT_coeff_'+ str(i) for i in range(1,NUM_COEFFS + 1)])
-    print "headers: ", len(fieldNames)
     coefficients = np.array([fft.dct(timeWindow[field]) for field in fieldNames]).T
-    print "coeff: ", coefficients.shape
     coefficient_means = np.mean(np.array(coefficients), 0)
-    print "coeff means: ", coefficient_means.shape
     sorted_indices = sorted(range(len(coefficient_means)), key= lambda x: coefficient_means[x], reverse= True)
-    print "sorted idx: ", len(sorted_indices)
     top_indices = sorted_indices[:NUM_COEFFS]
-    print "top idx: ", top_indices
     del sorted_indices
     mask = np.zeros(len(fieldNames), dtype = bool)
-    print "mask: ", mask.shape
-
     mask[top_indices] = True
     # The following is the freq-domain representation after compression: compressed by taking the on-average-best coefficients
     top_coefficients = coefficients.T[mask, :]
@@ -162,7 +163,6 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
     row = np.atleast_2d([])
     columns = [timeWindow[fieldName] for fieldName in names]
     for column in columns:
-        # print column
         features_from_col = [np.array((func(column))) for func, _ in stat_func_pointers]
         v= np.array([features_from_col])
         row = np.hstack((row, v))

@@ -53,6 +53,7 @@ def deleteInvalidData(dirname, filenames):
         _headers = [h.replace('.', '_') for h in headers]
         data = mergeLists(accelLines, audioLines)
         lines = [_headers] + data
+
         return (lines, accelLineCounter, 0)
 
 def makeSameLength(accelLines,audioLines):
@@ -157,7 +158,7 @@ def _validTable(removeMe, filePath):
         return ([], False, 0)
 
     data = readFileToFloat(filePath)
-    print filePath
+
     diffSecs = data['diffSecs']
     deltas_1 = zip(diffSecs[:-1], diffSecs[1:])
     deltas_2 = zip(diffSecs[:-2], diffSecs[2:])
@@ -210,6 +211,6 @@ reader = csv.reader(dataFile)
 writer = csv.writer(outFile)
 for row in reader:
     rows.append(row)
-print rows
+
 writer.writerows(rows)
 '''
