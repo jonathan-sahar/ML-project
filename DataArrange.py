@@ -50,8 +50,9 @@ def deleteInvalidData(dirname, filenames):
         return ([], 0, accelLineCounter)
     else:
         headers = acclHeader[0] + audioHeader[0]
+        _headers = [h.replace('.', '_') for h in headers]
         data = mergeLists(accelLines, audioLines)
-        lines = [headers] + data
+        lines = [_headers] + data
         return (lines, accelLineCounter, 0)
 
 def makeSameLength(accelLines,audioLines):

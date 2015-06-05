@@ -36,8 +36,8 @@ def _cross_correlation_accl(window, energy_type):
     :return: cross correlation between movement in X and Y
     '''
     psd = str(psd_D[energy_type])
-    a = window[:, accl_fields["x.PSD."+ psd]]
-    b = window[:, accl_fields["y.PSD."+ psd]]
+    a = window[:, accl_fields["x_PSD."+ psd]]
+    b = window[:, accl_fields["y_PSD."+ psd]]
     return stats.pearsonr(a,b)[0]
 
 
@@ -58,10 +58,10 @@ def _zero_crossing_rate(a):
     return [len(w)]
 
 #operates on sub windows
-def samplesInFreqRange(window):
-    fields = [accl_fields["x.PSD."+ str(psd_D[energy_type])] for energy_type in ['high', 'med', 'low']]
+def numSamplesInFreqRange(window):
+    fields = [accl_fields["x_PSD_"+ str(psd_D[energy_type])] for energy_type in ['high', 'med', 'low']]
     if windowHasFirstRow(window):
-        origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
+        origNames = ["x_PSD_"+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
         firstRow = getFieldNames(origNames, ['is_freq_in_range '])
         rows = firstRow
         window = np.array(window[1:][:])
@@ -79,10 +79,10 @@ def samplesInFreqRange(window):
 
 # operates on windows
 def numSubWindowsInFreqRange(window, energy_type):
-    fields = [accl_fields["x.PSD."+ str(psd_D[energy_type]) + '_is_freq_in_range'] for energy_type in ['high', 'med', 'low']]
+    fields = [accl_fields["x_PSD_"+ str(psd_D[energy_type]) + '_is_freq_in_range'] for energy_type in ['high', 'med', 'low']]
     freqData = np.array(window[:, fields])
     counts  = [len(np.where(column == 'True')) for column in freqData.T]
-    origNames = ["x.PSD."+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
+    origNames = ["x_PSD_"+ str(psd_D[energy_type]) for energy_type in ['high', 'med', 'low']]
     firstRow = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
     rows = firstRow
     rows.append(counts)
