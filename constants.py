@@ -31,6 +31,9 @@ ENTIRE_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Projec
 UNIFIED_ENTIRE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_entire.csv'
 UNIFIED_AGGREGATED_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_aggregated_subWindows.csv'
 
+UNIFIED_ENTIRE_LABELS_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_entire_labels.csv'
+UNIFIED_AGGREGATED_LABELS_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_aggregated_subWindows_labels.csv'
+
 
 NUMBER_OF_ENTIRE_FEATURES = 0
 NUMBER_OF_FIVE_MINUTES_FEATURES = 0
