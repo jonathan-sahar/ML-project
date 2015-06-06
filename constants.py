@@ -3,7 +3,6 @@ __author__ = 'Jonathan'
 LONG_TIME_WINDOW = 300
 SHORT_TIME_WINDOW = 5
 ENTROPY_RADIUS = 5
-
 DFA_WINDOW_LEN = 10 # no. of lines
 
 CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
@@ -12,27 +11,30 @@ PATIENTS = SICK_PATIENTS+CONTROL
 
 PATIENTS_test = ['VIOLET'] # TODO: for testing!
 
-UNDERLINES_BEFORE_NAME = 2
-DATA_LEN = 1000000000
-
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
-# UNIFIED_TABLES_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
+# UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
 # DATA_TABLE_FILE_PATH = 'C:\ML\parkinson\Unified Tables\DATAFile.csv'
 # SHORT_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\SHORTFile.csv'
 # LONG_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\LONGFile.csv'
 # ENTIRE_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\ENTIREFile.csv'
 
-ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-DATA_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_table.csv'
-UNIFIED_TABLES_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables'
-SHORT_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\SHORTFile.csv'
-LONG_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\LONGFile.csv'
-ENTIRE_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\ENTIREFile.csv'
-UNIFIED_ENTIRE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_entire.csv'
-UNIFIED_AGGREGATED_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_aggregated_subWindows.csv'
+import os
 
-UNIFIED_ENTIRE_LABELS_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_entire_labels.csv'
-UNIFIED_AGGREGATED_LABELS_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_aggregated_subWindows_labels.csv'
+SHORT_TABLE_PREFIX = 'SHORTFILE'
+LONG_TABLE_PREFIX = 'LONGFILE'
+ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
+
+ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+UNIFIED_TABLES_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables'
+
+DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
+UNIFIED_ENTIRE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
+UNIFIED_AGGREGATED_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
+
+UNIFIED_ENTIRE_LABELS_FILENAME = 'unified_entire_labels.csv'
+UNIFIED_AGGREGATED_LABELS_FILENAME = 'unified_aggregated_labels.csv'
+UNIFIED_ENTIRE_LABELS_PATH = os.path.join(UNIFIED_TABLES_FOLDER ,UNIFIED_ENTIRE_LABELS_FILENAME)
+UNIFIED_AGGREGATED_LABELS_PATH = os.path.join(UNIFIED_TABLES_FOLDER ,UNIFIED_AGGREGATED_LABELS_FILENAME)
 
 
 NUMBER_OF_ENTIRE_FEATURES = 0
@@ -52,20 +54,17 @@ MAX_TIME_DIFF = 2 #seconds
 
 delete = False
 
-#Set logging options
 
-
-# LOG_LEVEL = 'DEBUG'
-# numeric_level = getattr(logging, LOG_LEVEL, None)
-# logging.basicConfig(level=numeric_level)
-
-# FOR TESTING PURPOSES ONLY
+# FOR TESTING PURPOSES
 from collections import Counter
+import logging
+
 def print_doubled_fields(names):
     l = [item for item, count in Counter(names).items() if count > 1]
     if len(l) > 0:
         print "duplicate field names: {}".format(l)
-    else: print "~ No duplicates! ~"
+    else:
+        print "~ No duplicates! ~"
 
 
 def restore_data():
@@ -74,9 +73,9 @@ def restore_data():
     testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
     copy_tree(orig_data_folder, testing_data_folder)
 
-import logging
-# LOG_LEVEL = 'WARN'
-LOG_LEVEL = 'INFO'
+
+LOG_LEVEL = 'WARN'
+# LOG_LEVEL = 'INFO'
 logger = logging.getLogger('tipper')
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(getattr(logging, LOG_LEVEL, None))

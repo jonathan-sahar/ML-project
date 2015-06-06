@@ -146,7 +146,7 @@ stat_func_pointers = [
                      (_mode, 'mode'),
                      (_per_window_mean_TKEO, 'mean_TKEO'),
                      (_zero_crossing_rate, 'zero_crossings')
-                     ] #TODO add more functionsdc
+                     ] #TODO add more functions
 
 freq_domain_func_pointers = [()]
 

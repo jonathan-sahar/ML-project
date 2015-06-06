@@ -25,7 +25,7 @@ def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
         elif windowType == 'long':
             header, data = func(dataWindow, aggregatedWindows)
         else: #windowType == 'entire'
-            header, data = func(dataWindow, aggregatedWindows)
+            header, data = func(dataWindow, aggregatedWindows, 'entire')
         headers.extend(header)
         aggregatedWindow = np.hstack((aggregatedWindow, np.atleast_2d(data)))
 
@@ -46,12 +46,9 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
         for timeWindow in dataWindows[1:]:
             _, row = aggregate(aggregatorsList, windowType, timeWindow, None)
             table.append(row)
-    else:
-        if windowType == 'long':
-            if not len(dataWindows) == len(aggregatedWindows):
-                print "{}, {}".format(len(dataWindows), len(aggregatedWindows))
-                exit()
-        print "{}, {}".format(len(dataWindows), len(aggregatedWindows))
+    elif windowType == 'long':
+        assert len(dataWindows) == len(aggregatedWindows), "len(dataWindows), len(aggregatedWindows): {}, {}"\
+                                                                       .format(len(dataWindows), len(aggregatedWindows))
         aggIter = iter(aggregatedWindows)
         header, firstAggregatedWindow = aggregate(aggregatorsList, windowType, dataWindows[0], aggIter.next())
         table = [firstAggregatedWindow]
@@ -59,13 +56,14 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
             item = aggIter.next()
             _, row = aggregate(aggregatorsList, windowType, timeWindow, item)
             table.append(row)
+    else:
+        header, row = aggregate(aggregatorsList, windowType, dataWindows, aggregatedWindows)
+        table = [row]
+
+
     dt = zip(header, len(header)*['f4']) # TODO: set the field type in a constant. are 4 bytes enough?
     rows = [tuple(list(row[0])) for row in table]
-    if not len(rows[0]) == len(dt):
-        print "len rows: ", len(rows[0])
-        print "len dt: ", len(dt)
-        print " rows: ", (rows[0])
-        print " dt: ", (dt)
+    assert len(rows[0]) == len(dt), 'number of fields does not match number of values in row!'
     ret = np.array(rows, dtype=dt)
     return ret
 
@@ -78,28 +76,6 @@ def divideToWindows(dataMatrix, windowLength):
     '''
     divided =  [dataMatrix[a:a+windowLength] for a in range(0, len(dataMatrix)-windowLength + 1, windowLength)]
     return  divided
-
-    # firtsIteration = True
-    # if dataMatrix == []:
-    #     return []
-    # windows =[]
-    # window = []
-    # lineCounter = 0
-    # for row in dataMatrix:
-    #     lineCounter +=1
-    #     window.append(row)
-    #     if firtsIteration == True:
-    #         if lineCounter == windowLength+1:
-    #             lineCounter = 0
-    #             windows.append(window)
-    #             window = []
-    #             firtsIteration = False
-    #     else:
-    #         if lineCounter == windowLength:
-    #             lineCounter = 0
-    #             windows.append(window)
-    #             window = []
-    # return windows
 
 
 def readFileToFloat(filePath):
@@ -124,11 +100,11 @@ def readFileAsIs(filePath):
     newFile.close()
     return allLines
 
-def createFeatures(outputDir = UNIFIED_TABLES_PATH):
+def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
-    aggregatorsListLong = [statisticsForAllColoumns, waveletCompressForAllColoumns, numSubWindowsInFreqRange]
+    aggregatorsListLong = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, numSubWindowsInFreqRange]
     aggregatorsListShort = [numSamplesInFreqRange]
-    aggregatorsListEntire = [statisticsForAllColoumns, waveletCompressForAllColoumns, averageOnWindows]
+    aggregatorsListEntire = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, averageOnWindows]
 
     #initialize
     dataMatrix = dict()
@@ -155,7 +131,9 @@ def createFeatures(outputDir = UNIFIED_TABLES_PATH):
         dataSubWindows = divideToWindows(patientData, SHORT_TIME_WINDOW) # dataSubWindows is a list of structured arrays.
 
 
-        aggregatedSubWindows[patient] = (createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None)) #TODO check if easy to return the table
+        aggregatedSubWindows[patient] = createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None) #TODO check if easy to return the table
+        # logger.info("first aggr subWindow:\n{}".format(aggregatedSubWindows[patient].dtype.names))
+        # logger.info("{}".format(aggregatedSubWindows[patient][0]))
 
         #write to patient file
         shortAggregatedFile = open(os.path.join(outputDir, "SHORTFILE_" + patient + ".csv"), 'w')
@@ -164,41 +142,26 @@ def createFeatures(outputDir = UNIFIED_TABLES_PATH):
         writer.writerow(patientTable.dtype.names)
         writer.writerows(patientTable)
 
-
+    logger.info("Wrote aggregatedSubWindows table to File")
     #create 5 min per line table
-    if not len(PATIENTS_test) == len(dataMatrix):
-        print len(PATIENTS_test), len(dataMatrix)
-        exit(1)
-    # for patient, patientData in zip(PATIENTS, dataMatrix):
+    assert len(PATIENTS_test) == len(dataMatrix), "len(PATIENTS_test)({}) != len(dataMatrix)({}) !: "\
+                                                                            .format(len(PATIENTS_test), len(dataMatrix))
     for patient, patientData in dataMatrix.items():
         longAggregatedFile = open(os.path.join(outputDir, "LONGFILE_" + patient + ".csv"), 'w')
-        total_data_length = (len(patientData))
-        num_windows = total_data_length/LONG_TIME_WINDOW
-        num_subwindows_per_entire = total_data_length/SHORT_TIME_WINDOW
-        num_subwindows_per_window = num_subwindows_per_entire/num_windows
-        # logger.info("long window len: {}, subwindow len: {}".format(LONG_TIME_WINDOW, SHORT_TIME_WINDOW))
-        # logger.info("total_data_length: ".format(total_data_length))
-        # logger.info("num_windows: ".format(num_windows))
-        # logger.info("num_subwindows_per_entire: ".format(num_subwindows_per_entire))
-        # logger.info("num_subwindows_per_window: ".format(num_subwindows_per_window))
-        #DATA_LEN/LONG_TIME_WINDOW WINDOWS
         dataWindows = divideToWindows(patientData, LONG_TIME_WINDOW)
-        # logger.info("window length: {}".format(len(dataWindows[0])))
-        #(DATA_LEN/SHORT_TIME_WINDOW)/(LONG_TIME_WINDOW/SHORT_TIME_WINDOW) WINDOWS = DATA_LEN/LONG_TIME
         subWindows = divideToWindows(aggregatedSubWindows[patient], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
-        # logger.info("(aggr'd)subWindow length: {}".format(len(subWindows[0])))
-        # logger.info("num windows: {}, num aggr'd subwindows windows: {}".format(len(dataWindows), len(subWindows)))
 
         aggregatedWindows[patient] = (createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
         aggregatedLabels[patient] = len(aggregatedWindows[patient]) * [(patient in SICK_PATIENTS)]
 
         writer = csv.writer(longAggregatedFile, lineterminator='\n')
-        patientTable = aggregatedSubWindows[patient] # every line is the reduction of a 5 min window of current patient's data
+        patientTable = aggregatedWindows[patient] # every line is the reduction of a 5 min window of current patient's data
         writer.writerow(patientTable.dtype.names)
         writer.writerows(patientTable)
 
+        logger.info("Wrote aggregatedWindows table to File, patient: {}".format(patient))
+
     #create patient per line table
-    #patientWindowsList = divideToPatients(dataMatrix, LongWindowsMatrix) not necesssary any more
     for patient, patientData in dataMatrix.items():
         entireAggregatedFile = open(os.path.join(outputDir, "ENTIREFILE_" + patient + ".csv"), 'w')
         aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', patientData, aggregatedWindows[patient])
@@ -208,11 +171,13 @@ def createFeatures(outputDir = UNIFIED_TABLES_PATH):
     entireLabels = [(patient in SICK_PATIENTS) for patient in dataMatrix.keys()]
     aggregatedWindowsLabels = []
     [aggregatedWindowsLabels.extend(labels) for labels in aggregatedLabels.values()]
-    with open(os.path.join(outputDir, "ENTIRE_LABELS.csv"), 'w') as file:
+
+    # write labels to files
+    with open(os.path.join(outputDir, UNIFIED_ENTIRE_LABELS_FILENAME), 'w') as file:
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(entireLabels)
 
-    with open(os.path.join(outputDir, "AGGREGATED_LABELS.csv"), 'w') as file:
+    with open(os.path.join(outputDir, UNIFIED_AGGREGATED_LABELS_FILENAME), 'w') as file:
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(aggregatedWindowsLabels)
 
