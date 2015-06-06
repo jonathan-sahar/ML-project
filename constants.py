@@ -40,6 +40,9 @@ NUMBER_OF_FIVE_MINUTES_FEATURES = 0
 NUMBER_OF_FOLDS = 120 #16 choose 2
 
 
+entireFeatures = []
+longWindowsFeatures = []
+
 NUM_COEFFS = 5
 
 FREQ_L = 0.0161267947405577 #Hz?

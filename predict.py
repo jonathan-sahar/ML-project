@@ -33,7 +33,7 @@ def logisticRegPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
 
 
 def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
-    predictor =sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
+    predictor = sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
     return results
 
@@ -48,7 +48,7 @@ def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
     return results
 
 def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
-    predictor =
+    predictor = sklearn.ensemble.RandomForestClassifier(65) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False)
     return results
 
@@ -76,9 +76,33 @@ def predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, isEntire
 
     return results
 
+def readFileToFloat(filePath): #TODO same code in another module. open util module
+    '''
+    Assumes file  contains headers
+    :param filePath:
+    :return:
+    '''
+    newFile = open(filePath, 'r')
+    data = np.genfromtxt(filePath, dtype=float, delimiter=',', names = True, case_sensitive=True)
+    field_names = np.array(data.dtype.names)
+    r = re.compile(r'(.*time.*|.*patient.*)',re.IGNORECASE)
+    vmatch = np.vectorize(lambda x:bool(r.match(x)))
+    mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
+    return data[field_names[mask]]
+
+def readFileAsIs(filePath):  #TODO same code in another module. open util module
+    newFile = open(filePath, 'r')
+    reader = csv.reader(newFile)
+    allLines = [row for row in reader]
+    newFile.close()
+    return allLines
+
+def plot(errorFeatureTupleList):
+
+    return
 
 if __name__=='__main__':
-    linePerPatientData = readLinePerPatientData()
+    linePerPatientData = readFileToFloat(?????)
     LabelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
 
     #each result is a Dictionary with all learning Iterations (features, 'all', transformation')
@@ -86,13 +110,18 @@ if __name__=='__main__':
     logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
 
-    linePerFiveMinutesData = readLinePerFiveMinutesData()
-    LabelsPerLines = getLabelsPerLine()#(np.array(linePerFiveMinutesData))(:LABEL_COLUMN) need to do real extraction
+    linePerFiveMinutesData = readFileToFloat(???????)
+    LabelsPerLines = readFileToFloat(??????)
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
 
-    plot()
+    plot(svmLinePerPatientResults)
+    plot(logisticRegLinePerPatientResults)
+    plot(randomForestLinePerPatientResults)
+    plot(svmLinePerFiveMinutesResults)
+    plot(logisticRegLinePerFiveMinutesResults)
+    plot(randomForestLinePerFiveMinutesResults)
 
