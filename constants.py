@@ -28,6 +28,9 @@ UNIFIED_TABLES_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\d
 SHORT_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\SHORTFile.csv'
 LONG_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\LONGFile.csv'
 ENTIRE_TABLE_FILE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\ENTIREFile.csv'
+UNIFIED_ENTIRE_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_entire.csv'
+UNIFIED_AGGREGATED_PATH = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables\unified_aggregated_subWindows.csv'
+
 
 NUMBER_OF_ENTIRE_FEATURES = 0
 NUMBER_OF_FIVE_MINUTES_FEATURES = 0
