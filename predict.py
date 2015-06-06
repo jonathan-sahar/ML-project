@@ -37,7 +37,7 @@ def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
     return results
 
-def  svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
+def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
     predictor = sklearn.svm.SVC(kernel='linear')
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False) #TODO maybe better creating lose function
     return results
@@ -52,6 +52,14 @@ def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False)
     return results
 
+def lossFunction(estimator, X, y):
+    loss = 0.0
+    for a,b in X,y:
+        if estimator.predict(a) != b:
+            loss += 1
+    loss = loss / len(X)
+    return loss
+
 def predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, isEntire):
     results = []
     for k in range(0, NUMBER_OF_ENTIRE_FEATURES):
@@ -59,7 +67,7 @@ def predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, isEntire
         data = list(linePerPatientMatrix[:,feature])
         feature = entireFeatures[data.pop()] #the first item is the feature name
         #cross_validate
-        result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, NUMBER_OF_FOLDS)
+        result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients,  lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
         results.append((error, feature))
 
@@ -98,20 +106,21 @@ def readFileAsIs(filePath):  #TODO same code in another module. open util module
     return allLines
 
 def plot(errorFeatureTupleList):
-
+    sorted(errorFeatureTupleList, lambda x: x[1])
+    print errorFeatureTupleList
     return
 
 if __name__=='__main__':
-    linePerPatientData = readFileToFloat(?????)
-    LabelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
+    linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
+    LabelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
 
     #each result is a Dictionary with all learning Iterations (features, 'all', transformation')
     svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
     logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
 
-    linePerFiveMinutesData = readFileToFloat(???????)
-    LabelsPerLines = readFileToFloat(??????)
+    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_PATH)
+    LabelsPerLines = readFileAsIs(UNIFIED_AGGREGATED_LABELS_PATH)
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
