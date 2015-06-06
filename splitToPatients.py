@@ -6,7 +6,7 @@ from constants import *
 
 
 
-def splitToPatients(outputDir = UNIFIED_TABLES_PATH):
+def splitToPatients(outputDir = UNIFIED_TABLES_FOLDER):
     allLines = []
     dataFilePath = os.path.join(outputDir, "unified_table.csv")
     dataFile = open(dataFilePath, 'r')

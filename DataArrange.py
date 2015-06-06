@@ -170,7 +170,7 @@ def _validTable(removeMe, filePath):
         return (data, True, len(diffSecs))
 
 
-def arrangeData(rootDir = ROOT_DATA_FOLDER, outputDir = UNIFIED_TABLES_PATH):
+def arrangeData(rootDir = ROOT_DATA_FOLDER, outputDir = UNIFIED_TABLES_FOLDER):
     try:
         os.mkdir(outputDir)
     except WindowsError:

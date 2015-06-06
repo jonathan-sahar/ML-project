@@ -136,17 +136,18 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows = None, windowTyp
     # mask[sorted_indices] = True
 
 stat_func_pointers = [
-                     (stats.tmax, 'max'),
-                     (stats.tmin,'min' ),
-                     (stats.tmean,'mean'),
-                     (stats.tstd, 'std'),
-                     (stats.skew, 'skew'),
-                     (stats.kurtosis, 'kurtosis'),
-                     (np.nanmedian, 'median'),
-                     (_mode, 'mode'),
-                     (_per_window_mean_TKEO, 'mean_TKEO'),
-                     (_zero_crossing_rate, 'zero_crossings')
-                     ] #TODO add more functions
+                     (stats.tmax, 'max')]\
+    # ,
+    #                  (stats.tmin,'min' ),
+    #                  (stats.tmean,'mean'),
+    #                  (stats.tstd, 'std'),
+    #                  (stats.skew, 'skew'),
+    #                  (stats.kurtosis, 'kurtosis'),
+    #                  (np.nanmedian, 'median'),
+    #                  (_mode, 'mode'),
+    #                  (_per_window_mean_TKEO, 'mean_TKEO'),
+    #                  (_zero_crossing_rate, 'zero_crossings')
+    #                  ] #TODO add more functions
 
 freq_domain_func_pointers = [()]
 
