@@ -1,15 +1,24 @@
+from chaco.tests.serializable_base import Root
+
 __author__ = 'Jonathan'
+
+import os
+import csv
+import re
+import numpy as np
+
+
 
 LONG_TIME_WINDOW = 300
 SHORT_TIME_WINDOW = 5
 ENTROPY_RADIUS = 5
 DFA_WINDOW_LEN = 10 # no. of lines
 
-CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'LILY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA']
-SICK_PATIENTS = ['CHERRY', 'CROCUS', 'DAISY', 'DAISEY', 'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET']
+CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA'] # 'LILY'
+SICK_PATIENTS = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # 'DAISEY'
 PATIENTS = SICK_PATIENTS+CONTROL
 
-PATIENTS_test = ['VIOLET'] # TODO: for testing!
+PATIENTS_test = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # TODO: for testing!
 
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 # UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
@@ -24,8 +33,9 @@ SHORT_TABLE_PREFIX = 'SHORTFILE'
 LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
+# ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
 ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-UNIFIED_TABLES_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample\Unified Tables'
+UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
 UNIFIED_ENTIRE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
@@ -67,15 +77,14 @@ def print_doubled_fields(names):
         print "~ No duplicates! ~"
 
 
-def restore_data():
+def restore_data(orig_data_folder, testing_data_folder):
     from distutils.dir_util import  copy_tree
-    orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample_orig'
-    testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
     copy_tree(orig_data_folder, testing_data_folder)
 
 
 LOG_LEVEL = 'WARN'
 # LOG_LEVEL = 'INFO'
+# LOG_LEVEL = 'DEBUG'
 logger = logging.getLogger('tipper')
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(getattr(logging, LOG_LEVEL, None))

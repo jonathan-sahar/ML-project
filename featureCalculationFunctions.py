@@ -1,8 +1,5 @@
 __author__ = 'Jonathan'
-import re
-import numpy as np
 from itertools import product
-
 import scipy.stats as stats
 import scipy.fftpack as fft
 from pyeeg import dfa

@@ -1,9 +1,5 @@
 __author__ = 'Inspiron'
-import os
-import csv #TODO make sure doesn't use csv because in featureCalculationFunctions
-import re
 from constants import *
-import numpy as np
 from featureCalculationFunctions import *
 
 
@@ -102,8 +98,8 @@ def readFileAsIs(filePath):
 
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
-    aggregatorsListLong = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, numSubWindowsInFreqRange]
     aggregatorsListShort = [numSamplesInFreqRange]
+    aggregatorsListLong = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, numSubWindowsInFreqRange]
     aggregatorsListEntire = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, averageOnWindows]
 
     #initialize
@@ -115,6 +111,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #create 5 sec per line table, per person
     for patient in PATIENTS_test: # TODO: change back to PATIENTS!
         #read patient data, separate between actual features and labels
+        print "Generating features for ", patient
         patientData = readFileToFloat(os.path.join(outputDir, "DATAFILE_" + patient + ".csv"))
         names = np.array(patientData.dtype.names)
         labelField = names[np.where((names == 'Is_Sick'))]
