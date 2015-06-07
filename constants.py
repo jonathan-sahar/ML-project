@@ -18,7 +18,7 @@ CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA
 SICK_PATIENTS = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # 'DAISEY'
 PATIENTS = SICK_PATIENTS+CONTROL
 
-PATIENTS_test = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # TODO: for testing!
+PATIENTS_test = ['APPLE', 'VIOLET', 'DAISY'] # TODO: for testing!
 
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 # UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
@@ -38,6 +38,7 @@ ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
+
 UNIFIED_ENTIRE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
 UNIFIED_AGGREGATED_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
 
@@ -49,7 +50,7 @@ UNIFIED_AGGREGATED_LABELS_PATH = os.path.join(UNIFIED_TABLES_FOLDER ,UNIFIED_AGG
 
 NUMBER_OF_ENTIRE_FEATURES = 40 #TODO not correct
 NUMBER_OF_FIVE_MINUTES_FEATURES = 40 #TODO not correct
-NUMBER_OF_FOLDS = 120 #16 choose 2
+NUMBER_OF_FOLDS = 3 #16 choose 2
 
 
 entireFeatures = []

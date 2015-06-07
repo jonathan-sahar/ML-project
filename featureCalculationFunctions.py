@@ -86,10 +86,11 @@ def numSamplesInFreqRange(window):
 def numSubWindowsInFreqRange(window, aggregatedSubWindows):
     r = re.compile(r'(.*is_in_freq_range.*)')
     freqFields = filter_fields_by_name(aggregatedSubWindows.dtype.names, r)
-    counts  = [len(np.where(column == 'True')) for column in [aggregatedSubWindows[field] for field in freqFields]]
+    columns = [aggregatedSubWindows[field] for field in freqFields]
+    counts  = [len(np.where(column)[0]) for column in columns]
 
-    r = re.compile(r'([a-z]_PSD_\d+\b)')
-    origNames = filter_fields_by_name(aggregatedSubWindows.dtype.names, r)
+    r = re.compile(r'([a-z]+_PSD_\d+\b)')
+    origNames = filter_fields_by_name(window.dtype.names, r)
     headers = getFieldNames(origNames, ['num_subWindows_in_freq_range'])
     return headers, counts
 

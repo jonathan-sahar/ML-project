@@ -2,6 +2,8 @@ __author__ = 'Inspiron'
 
 import numpy as np
 from constants import *
+from random import shuffle
+
 #from sklearn import svm #TODO other learners as well
 import sklearn.svm
 import csv
@@ -14,6 +16,7 @@ line per entire data - predict by each feature of the line, all the features, an
 average of all lines per 5 min of patient - get one line per patient - should be just another features in the 'line per patient'
 lines per 5 min of data - predict by each feature, all the features.
 '''
+
 
 def getTransformationFeatures():
     return []
@@ -59,7 +62,7 @@ def lossFunction(estimator, X, y):
     loss = loss / len(X)
     return loss
 
-def predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, isEntire):
+def predictByFeatures(predictor, linePerPatientData, labelsPerPatients, isEntire):
     results = []
     features = linePerPatientData.dtype.names
 
@@ -72,24 +75,24 @@ def predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, isEntire
             data.append([item])
 
         #cross_validate
-        #result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+        #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
         print data
         print '================================='
-        print LabelsPerPatients
-        result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, 16)
+        print labelsPerPatients
+        result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
         results.append((error, feature))
 
     data = linePerPatientData
-    #result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-    result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, 16)
+    #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+    result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
     error = np.mean(result)
     results.append((error, 'all'))
 
     if isEntire:
         data = getTransformationFeatures(linePerPatientData)
-        #result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-        result = sklearn.cross_validation.cross_val_score(predictor, data, LabelsPerPatients, lossFunction, 16)
+        #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+        result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
         results.append((error, 'transformation'))
 
@@ -121,9 +124,38 @@ def plot(errorFeatureTupleList):
     print errorFeatureTupleList
     return
 
-if __name__=='__main__':
+def create_cross_validation_idxs(num_samples, num_folds):
+    '''Creates num_folds different and foreign folds of the data.
+    This method returns a collection of (training_samples_idxs, validation_samples_idxs) pairs,
+    every pair must have a single, different fold as the validation set, and the other folds as training.
+    PICK THE ELEMENTS OF EACH FOLD RANDOMLY. The collection needs to have num_folds such pairs.'''
+    sample_set = set(range(num_samples))
+    fold_size = int(num_samples/num_folds)
+
+    # Shuffle the samples, each fold_size consecutive indexes in the shuffle result will be some Sk
+    shuffled_samples = list(sample_set)
+    shuffle(shuffled_samples)
+
+    # Calculate all training-validation pairs
+    pairs = []
+    for fold_start in range(0,num_samples,fold_size):
+        validation = set(shuffled_samples[fold_start:fold_start+fold_size])
+        training = sample_set - validation
+        pairs.append((list(training),list(validation)))
+    return pairs
+
+def crossValidate(predictor, data, labels, lossFunction, numFolds):
+    folds = create_cross_validation_idxs(len(data), numFolds)
+    errors = []
+    for trainIndices, testIndices in folds:
+        predictor.fit([data[i] for i in trainIndices], [labels[i] for i in trainIndices])
+        errors.append(lossFunction(predictor, data[testIndices], labels[testIndices]))
+    return errors
+
+
+def predict():
     #linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
-    linePerPatientData = readFileToFloat('C:\ML\parkinson\orEstimation\SVM_IMPUT.csv')
+    linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
     #LabelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
     LabelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
@@ -152,3 +184,5 @@ if __name__=='__main__':
     plot(randomForestLinePerFiveMinutesResults)
     '''
 
+if __name__=='__main__':
+    predict()
