@@ -1,7 +1,7 @@
 __author__ = 'Inspiron'
 from constants import *
 from featureCalculationFunctions import *
-
+import numpy.lib.recfunctions as nprf
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
     '''
@@ -99,7 +99,7 @@ def readFileAsIs(filePath):
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
     aggregatorsListShort = [numSamplesInFreqRange]
-    aggregatorsListLong = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, numSubWindowsInFreqRange]
+    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange] #, waveletCompressForAllColoumns
     aggregatorsListEntire = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, averageOnWindows]
 
     #initialize
@@ -141,8 +141,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
 
     logger.info("Wrote aggregatedSubWindows table to File")
     #create 5 min per line table
-    assert len(PATIENTS_test) == len(dataMatrix), "len(PATIENTS_test)({}) != len(dataMatrix)({}) !: "\
-                                                                            .format(len(PATIENTS_test), len(dataMatrix))
+    assert len(PATIENTS_test) == len(dataMatrix), "len(PATIENTS_test)({}) != len(dataMatrix)({}) !: " \
+        .format(len(PATIENTS_test), len(dataMatrix))
     for patient, patientData in dataMatrix.items():
         longAggregatedFile = open(os.path.join(outputDir, "LONGFILE_" + patient + ".csv"), 'w')
         dataWindows = divideToWindows(patientData, LONG_TIME_WINDOW)
@@ -155,28 +155,44 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         patientTable = aggregatedWindows[patient] # every line is the reduction of a 5 min window of current patient's data
         writer.writerow(patientTable.dtype.names)
         writer.writerows(patientTable)
-
         logger.info("Wrote aggregatedWindows table to File, patient: {}".format(patient))
 
+    with open(UNIFIED_AGGREGATED_PATH, 'w') as unified_entire_file:
+        listOfPData = [aggregatedWindows[patient] for patient in PATIENTS_test]
+        unified_aggregated_table = nprf.stack_arrays(tuple(listOfPData), usemask=False)
+        writer = csv.writer(unified_entire_file, lineterminator='\n')
+        writer.writerow(unified_aggregated_table.dtype.names)
+        writer.writerows(unified_aggregated_table)
+
+    with open(UNIFIED_AGGREGATED_LABELS_PATH, 'w') as file:
+        aggregatedWindowsLabels = []
+        [aggregatedWindowsLabels.extend(labels) for labels in aggregatedLabels.values()]
+        writer = csv.writer(file, lineterminator='\n')
+        writer.writerow(aggregatedWindowsLabels)
+
     #create patient per line table
+    aggregatedEntires = dict()
     for patient, patientData in dataMatrix.items():
         entireAggregatedFile = open(os.path.join(outputDir, "ENTIREFILE_" + patient + ".csv"), 'w')
-        aggregatedAll = createTimeWindowTable(aggregatorsListEntire, 'entire', patientData, aggregatedWindows[patient])
+        aggregatedEntires[patient] = createTimeWindowTable(aggregatorsListEntire, 'entire', patientData, aggregatedWindows[patient])
         writer = csv.writer(entireAggregatedFile, lineterminator='\n')
-        writer.writerow(aggregatedAll.dtype.names)
-        writer.writerows(aggregatedAll)
-    entireLabels = [(patient in SICK_PATIENTS) for patient in dataMatrix.keys()]
-    aggregatedWindowsLabels = []
-    [aggregatedWindowsLabels.extend(labels) for labels in aggregatedLabels.values()]
+        writer.writerow(aggregatedEntires[patient].dtype.names)
+        writer.writerows(aggregatedEntires[patient])
+
+
+    with open(UNIFIED_ENTIRE_PATH, 'w') as unified_entire_file:
+        listOfPData = [aggregatedEntires[patient] for patient in PATIENTS_test]
+        unified_entire_table =nprf.stack_arrays(tuple(listOfPData), usemask=False)
+        writer = csv.writer(unified_entire_file, lineterminator='\n')
+        writer.writerow(unified_entire_table.dtype.names)
+        writer.writerows(unified_entire_table)
 
     # write labels to files
-    with open(os.path.join(outputDir, UNIFIED_ENTIRE_LABELS_FILENAME), 'w') as file:
+    with open(UNIFIED_ENTIRE_LABELS_PATH, 'w') as file:
+        entireLabels = [(patient in SICK_PATIENTS) for patient in dataMatrix.keys()]
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(entireLabels)
 
-    with open(os.path.join(outputDir, UNIFIED_AGGREGATED_LABELS_FILENAME), 'w') as file:
-        writer = csv.writer(file, lineterminator='\n')
-        writer.writerow(aggregatedWindowsLabels)
 
 if __name__ == "__main__":
     createFeatures()
