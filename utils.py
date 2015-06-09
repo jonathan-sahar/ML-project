@@ -1,0 +1,56 @@
+__author__ = 'Jonathan'
+from collections import Counter
+import logging
+import re
+import csv
+import os
+import numpy as np
+
+
+
+def print_doubled_fields(names):
+    l = [item for item, count in Counter(names).items() if count > 1]
+    if len(l) > 0:
+        print "duplicate field names: {}".format(l)
+    else:
+        print "~ No duplicates! ~"
+
+
+def restore_data(orig_data_folder, testing_data_folder):
+    from distutils.dir_util import  copy_tree
+    copy_tree(orig_data_folder, testing_data_folder)
+
+
+LOG_LEVEL = 'WARN'
+# LOG_LEVEL = 'INFO'
+# LOG_LEVEL = 'DEBUG'
+logger = logging.getLogger('tipper')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(getattr(logging, LOG_LEVEL, None))
+
+def readFileToFloat(filePath, dt = float, names = True):
+    '''
+    Assumes file  contains headers
+    :param filePath:
+    :return:
+    '''
+    newFile = open(filePath, 'r')
+    data = np.genfromtxt(filePath, dtype=dt, delimiter=',', names = names, case_sensitive=True)
+    if not names:
+        return data
+    field_names = np.array(data.dtype.names)
+    r = re.compile(r'(.*time.*|.*patient.*|.*sick.*)',re.IGNORECASE)
+    vmatch = np.vectorize(lambda x:bool(r.match(x)))
+    mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
+    return data[field_names[mask]]
+
+
+def readFileAsIs(filePath):
+    newFile = open(filePath, 'r')
+    reader = csv.reader(newFile)
+    allLines = [row for row in reader]
+    newFile.close()
+    return allLines
+
+def castStructuredArrayToRegular(arr):
+    return arr.view((np.float, len(arr.dtype.names)))

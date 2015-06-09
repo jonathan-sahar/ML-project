@@ -1,14 +1,10 @@
 __author__ = 'Inspiron'
 
-import os
 import shutil
 from datetime import datetime
 from constants import *
+from utils import *
 from structuredDataConstants import accl_fields, audio_fields
-import numpy as np
-import re
-import csv
-from createFeatureCSVs import readFileAsIs, readFileToFloat
 
 
 def deleteInvalidData(dirname, filenames):

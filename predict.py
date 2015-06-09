@@ -1,13 +1,10 @@
 __author__ = 'Inspiron'
 
-import numpy as np
 from constants import *
 from random import shuffle
-
+from utils import *
 #from sklearn import svm #TODO other learners as well
 import sklearn.svm
-import csv
-import re
 
 
 '''
@@ -22,9 +19,15 @@ def getTransformationFeatures():
     return []
 
 
-def svmPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
+def svmPredictLinePerPatient(linePerPatientData,labelsPerPatients):
     predictor = sklearn.svm.SVC('linear')
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
+
+    #todo restore
+    # results = predictByFeatures(predictor, linePerPatientData, labelsPerPatients, True)
+
+    #testing on all features at once:
+    results = crossValidate(predictor, linePerPatientData, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+
     return results
 
 
@@ -98,26 +101,6 @@ def predictByFeatures(predictor, linePerPatientData, labelsPerPatients, isEntire
 
     return results
 
-def readFileToFloat(filePath): #TODO same code in another module. open util module
-    '''
-    Assumes file  contains headers
-    :param filePath:
-    :return:
-    '''
-    newFile = open(filePath, 'r')
-    data = np.genfromtxt(filePath, dtype=float, delimiter=',', names = True, case_sensitive=True)
-    field_names = np.array(data.dtype.names)
-    r = re.compile(r'(.*time.*|.*patient.*)',re.IGNORECASE)
-    vmatch = np.vectorize(lambda x:bool(r.match(x)))
-    mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
-    return data[field_names[mask]]
-
-def readFileAsIs(filePath):  #TODO same code in another module. open util module
-    newFile = open(filePath, 'r')
-    reader = csv.reader(newFile)
-    allLines = [row for row in reader]
-    newFile.close()
-    return allLines
 
 def plot(errorFeatureTupleList):
     sorted(errorFeatureTupleList, lambda x: x[1])
@@ -148,21 +131,33 @@ def crossValidate(predictor, data, labels, lossFunction, numFolds):
     folds = create_cross_validation_idxs(len(data), numFolds)
     errors = []
     for trainIndices, testIndices in folds:
-        predictor.fit([data[i] for i in trainIndices], [labels[i] for i in trainIndices])
-        errors.append(lossFunction(predictor, data[testIndices], labels[testIndices]))
+        trainData = [data[i] for i in trainIndices]
+        trainlabels = [labels[i] for i in trainIndices]
+        testData = [data[i] for i in testIndices]
+        testLabels = [labels[i] for i in testIndices]
+        if np.all(trainlabels == trainlabels[0]): #can't train on elements that are all from the same group
+            continue
+        predictor.fit(trainData, trainlabels)
+        errors.append(lossFunction(predictor, testData , testLabels))
     return errors
 
 
 def predict():
     #linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
     linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
-    #LabelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
-    LabelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
+    labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
+    #labelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
+    # labelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
     #each result is a Dictionary with all learning Iterations (features, 'all', transformation')
-    svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
-    logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
-    randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients)
+    dataArray = castStructuredArrayToRegular(linePerPatientData)
+    labelsList = labelsPerPatients
+    svmLinePerPatientResults = svmPredictLinePerPatient(dataArray,labelsList)
+
+
+    svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
 
     '''
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_PATH)

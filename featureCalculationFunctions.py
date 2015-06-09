@@ -6,6 +6,7 @@ from pyeeg import dfa
 from entropy import entropy_ci
 
 from constants import *
+from utils import *
 from structuredDataConstants import accl_fields, audio_fields, psd_D
 
 def getFieldNames(origNames, modifiers):
@@ -27,12 +28,6 @@ def filter_fields_by_name(names, regex):
     mask = vmatch(names)
     indices = np.where(mask)[0]
     return np.array(names)[indices]
-
-
-def windowHasFirstRow(timeWindow):
-    match_exp = re.compile('([A-Za-z]+)')
-    firstFieldContents = str(timeWindow[0][0])
-    return (match_exp.search(firstFieldContents) != None)
 
 
 def _mode(values): return stats.mode(values)[0][0]
@@ -66,8 +61,6 @@ def _zero_crossing_rate(a):
     w = np.where(v)
     return [len(w)]
 
-def castStructuredArrayToRegular(arr):
-    return arr.view((np.float, len(arr.dtype.names)))
 
 #operates on sub windows
 def numSamplesInFreqRange(window):

@@ -2,6 +2,8 @@ __author__ = 'Inspiron'
 from constants import *
 from featureCalculationFunctions import *
 import numpy.lib.recfunctions as nprf
+from utils import *
+
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
     '''
@@ -74,27 +76,7 @@ def divideToWindows(dataMatrix, windowLength):
     return  divided
 
 
-def readFileToFloat(filePath):
-    '''
-    Assumes file  contains headers
-    :param filePath:
-    :return:
-    '''
-    newFile = open(filePath, 'r')
-    data = np.genfromtxt(filePath, dtype=float, delimiter=',', names = True, case_sensitive=True)
-    field_names = np.array(data.dtype.names)
-    r = re.compile(r'(.*time.*|.*patient.*|.*sick.*)',re.IGNORECASE)
-    vmatch = np.vectorize(lambda x:bool(r.match(x)))
-    mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
-    return data[field_names[mask]]
 
-
-def readFileAsIs(filePath):
-    newFile = open(filePath, 'r')
-    reader = csv.reader(newFile)
-    allLines = [row for row in reader]
-    newFile.close()
-    return allLines
 
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
@@ -107,7 +89,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     labelsMatrix = dict()
     aggregatedSubWindows = dict()
     aggregatedWindows = dict()
-    aggregatedLabels = dict()
+    aggregatedLabels = []
     #create 5 sec per line table, per person
     for patient in PATIENTS_test: # TODO: change back to PATIENTS!
         #read patient data, separate between actual features and labels
@@ -149,7 +131,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         subWindows = divideToWindows(aggregatedSubWindows[patient], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
 
         aggregatedWindows[patient] = (createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
-        aggregatedLabels[patient] = len(aggregatedWindows[patient]) * [(patient in SICK_PATIENTS)]
+        aggregatedLabels.extend(len(aggregatedWindows[patient]) * [float(patient in SICK_PATIENTS)])
 
         writer = csv.writer(longAggregatedFile, lineterminator='\n')
         patientTable = aggregatedWindows[patient] # every line is the reduction of a 5 min window of current patient's data
@@ -165,10 +147,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerows(unified_aggregated_table)
 
     with open(UNIFIED_AGGREGATED_LABELS_PATH, 'w') as file:
-        aggregatedWindowsLabels = []
-        [aggregatedWindowsLabels.extend(labels) for labels in aggregatedLabels.values()]
         writer = csv.writer(file, lineterminator='\n')
-        writer.writerow(aggregatedWindowsLabels)
+        writer.writerow(aggregatedLabels)
 
     #create patient per line table
     aggregatedEntires = dict()
@@ -189,8 +169,10 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
 
     # write labels to files
     with open(UNIFIED_ENTIRE_LABELS_PATH, 'w') as file:
-        entireLabels = [(patient in SICK_PATIENTS) for patient in dataMatrix.keys()]
         writer = csv.writer(file, lineterminator='\n')
+        entireLabels = [float((patient in SICK_PATIENTS)) for patient in dataMatrix.keys()]
+        # patientList = dataMatrix.keys()
+        # writer.writerow(patientList)
         writer.writerow(entireLabels)
 
 

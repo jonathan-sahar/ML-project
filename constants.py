@@ -1,14 +1,7 @@
 from chaco.tests.serializable_base import Root
 
 __author__ = 'Jonathan'
-
-import os
-import csv
-import re
-import numpy as np
-
-
-
+import  os
 LONG_TIME_WINDOW = 300
 SHORT_TIME_WINDOW = 5
 ENTROPY_RADIUS = 5
@@ -26,8 +19,6 @@ PATIENTS_test = ['APPLE', 'VIOLET', 'DAISY'] # TODO: for testing!
 # SHORT_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\SHORTFile.csv'
 # LONG_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\LONGFile.csv'
 # ENTIRE_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\ENTIREFile.csv'
-
-import os
 
 SHORT_TABLE_PREFIX = 'SHORTFILE'
 LONG_TABLE_PREFIX = 'LONGFILE'
@@ -67,28 +58,7 @@ delete = False
 
 
 # FOR TESTING PURPOSES
-from collections import Counter
-import logging
 
-def print_doubled_fields(names):
-    l = [item for item, count in Counter(names).items() if count > 1]
-    if len(l) > 0:
-        print "duplicate field names: {}".format(l)
-    else:
-        print "~ No duplicates! ~"
-
-
-def restore_data(orig_data_folder, testing_data_folder):
-    from distutils.dir_util import  copy_tree
-    copy_tree(orig_data_folder, testing_data_folder)
-
-
-LOG_LEVEL = 'WARN'
-# LOG_LEVEL = 'INFO'
-# LOG_LEVEL = 'DEBUG'
-logger = logging.getLogger('tipper')
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(getattr(logging, LOG_LEVEL, None))
 
 
 
