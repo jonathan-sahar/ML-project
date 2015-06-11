@@ -20,13 +20,12 @@ def getTransformationFeatures():
 
 
 def svmPredictLinePerPatient(linePerPatientData,labelsPerPatients):
-    predictor = sklearn.svm.SVC('linear')
+    predictor = sklearn.svm.SVC()
 
-    #todo restore
-    # results = predictByFeatures(predictor, linePerPatientData, labelsPerPatients, True)
+    results = predictByFeatures(predictor, linePerPatientData, labelsPerPatients, True)
 
     #testing on all features at once:
-    results = crossValidate(predictor, linePerPatientData, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+    # results = crossValidate(predictor, linePerPatientData, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
 
     return results
 
@@ -43,7 +42,7 @@ def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
     return results
 
 def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
-    predictor = sklearn.svm.SVC('linear')
+    predictor = sklearn.svm.SVC()
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False) #TODO maybe better creating lose function
     return results
 
@@ -59,8 +58,8 @@ def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
 
 def lossFunction(estimator, X, y):
     loss = 0.0
-    for a,b in X,y:
-        if estimator.predict(a) != b:
+    for data,label in zip(X,y):
+        if estimator.predict(data) != label:
             loss += 1
     loss = loss / len(X)
     return loss
@@ -70,7 +69,7 @@ def predictByFeatures(predictor, linePerPatientData, labelsPerPatients, isEntire
     features = linePerPatientData.dtype.names
 
     for feature in features:
-        linePerPatientMatrix = np.array(linePerPatientData)
+        linePerPatientMatrix = castStructuredArrayToRegular(linePerPatientData)
 
         data = [] #TODO temp solution - ugly
         tmpData = list(linePerPatientMatrix[feature])
@@ -146,20 +145,34 @@ def predict():
     #linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
     linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
     labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
+
     #labelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
     # labelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
     #each result is a Dictionary with all learning Iterations (features, 'all', transformation')
-    dataArray = castStructuredArrayToRegular(linePerPatientData)
-    labelsList = labelsPerPatients
-    svmLinePerPatientResults = svmPredictLinePerPatient(dataArray,labelsList)
 
+    #========================================================
+    #TESTING SECTION
+    # trainData = dataArray[:-1]
+    # trainlabels = labelsList[:-1]
+    # predictor = sklearn.svm.SVC()
+    # X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
+    # y = np.array([1, 1, 0, 0])
+    #
+    # predictor.fit(X, y)
+    # exit()
+    #
+    # predictor.fit(trainData, trainlabels)
+    # exit()
 
+    #========================================================
     svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    print svmLinePerPatientResults
+    exit()
     logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
 
-    '''
+
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_PATH)
     LabelsPerLines = readFileAsIs(UNIFIED_AGGREGATED_LABELS_PATH)
 
@@ -167,17 +180,14 @@ def predict():
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
-    '''
 
     plot(svmLinePerPatientResults)
     plot(logisticRegLinePerPatientResults)
     plot(randomForestLinePerPatientResults)
 
-    '''
     plot(svmLinePerFiveMinutesResults)
     plot(logisticRegLinePerFiveMinutesResults)
     plot(randomForestLinePerFiveMinutesResults)
-    '''
 
 if __name__=='__main__':
     predict()
