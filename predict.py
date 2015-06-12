@@ -5,7 +5,8 @@ from random import shuffle
 from utils import *
 #from sklearn import svm #TODO other learners as well
 import sklearn.svm
-
+import sklearn.ensemble
+import sklearn.linear_model
 
 '''
 for all patients,
@@ -19,14 +20,14 @@ def getTransformationFeatures():
     return []
 
 
-def svmPredictLinePerPatient(linePerPatientData,labelsPerPatients):
+def svmPredictLinePerPatient(linePerPatientData,linePerPatientLabels):
     predictor = sklearn.svm.SVC()
 
-    results = predictByFeatures(predictor, linePerPatientData, labelsPerPatients, True)
+    results = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
 
     #testing on all features at once:
-    # results = crossValidate(predictor, linePerPatientData, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-
+    # results = crossValidate(predictor, linePerPatientData, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
+    print  "svmPredictLinePerPatient is done!"
     return results
 
 
@@ -41,19 +42,19 @@ def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
     results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
     return results
 
-def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
+def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
     predictor = sklearn.svm.SVC()
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False) #TODO maybe better creating lose function
+    results = predictByFeatures(predictor, linePerFiveMinutesData, linePerFiveMinutesLabels, False) #TODO maybe better creating lose function
     return results
 
-def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
+def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
     predictor = sklearn.linear_model.LogisticRegression('l2', False)
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False)
+    results = predictByFeatures(predictor, linePerFiveMinutesData,linePerFiveMinutesLabels, False)
     return results
 
-def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines):
+def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
     predictor = sklearn.ensemble.RandomForestClassifier(65) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, False)
+    results = predictByFeatures(predictor, linePerFiveMinutesData,linePerFiveMinutesLabels, False)
     return results
 
 def lossFunction(estimator, X, y):
@@ -64,41 +65,31 @@ def lossFunction(estimator, X, y):
     loss = loss / len(X)
     return loss
 
-def predictByFeatures(predictor, linePerPatientData, labelsPerPatients, isEntire):
-    results = []
+def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
+    listOfLossValuesPerFeature = dict()
     features = linePerPatientData.dtype.names
 
     for feature in features:
-        linePerPatientMatrix = castStructuredArrayToRegular(linePerPatientData)
+        values = linePerPatientData[feature]
+        dataForClassifier = [[v] for v in values]
 
-        data = [] #TODO temp solution - ugly
-        tmpData = list(linePerPatientMatrix[feature])
-        for item in tmpData:
-            data.append([item])
-
-        #cross_validate
-        #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-        print data
-        print '================================='
-        print labelsPerPatients
-        result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+        result = crossValidate(predictor, dataForClassifier, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
-        results.append((error, feature))
-
-    data = linePerPatientData
-    #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-    result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
+        listOfLossValuesPerFeature[feature] = error
+    data = castStructuredArrayToRegular(linePerPatientData)
+    result = crossValidate(predictor, data, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
     error = np.mean(result)
-    results.append((error, 'all'))
+    listOfLossValuesPerFeature ['all'] = error
 
     if isEntire:
-        data = getTransformationFeatures(linePerPatientData)
-        #result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-        result = crossValidate(predictor, data, labelsPerPatients, lossFunction, NUMBER_OF_FOLDS)
-        error = np.mean(result)
-        results.append((error, 'transformation'))
-
-    return results
+        r = re.compile(r'(DCT_coeff_).*')
+        transformFeatures = filter_fields_by_name(linePerPatientData.dtype.names, r)
+        if len(transformFeatures) > 1:
+            result = crossValidate(predictor, data, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
+            error = np.mean(result)
+            listOfLossValuesPerFeature['transformation'] = error
+    print "predictByFeatures is done!"
+    return listOfLossValuesPerFeature
 
 
 def plot(errorFeatureTupleList):
@@ -149,28 +140,14 @@ def predict():
     #labelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
     # labelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
-    #each result is a Dictionary with all learning Iterations (features, 'all', transformation')
+    #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
 
-    #========================================================
-    #TESTING SECTION
-    # trainData = dataArray[:-1]
-    # trainlabels = labelsList[:-1]
-    # predictor = sklearn.svm.SVC()
-    # X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
-    # y = np.array([1, 1, 0, 0])
-    #
-    # predictor.fit(X, y)
-    # exit()
-    #
-    # predictor.fit(trainData, trainlabels)
-    # exit()
-
-    #========================================================
-    svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print svmLinePerPatientResults
-    exit()
-    logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    # svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    # logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    # print "logistic results\n: {}".format(logisticRegLinePerPatientResults)
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    print "hurray!"
+    exit()
 
 
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_PATH)
