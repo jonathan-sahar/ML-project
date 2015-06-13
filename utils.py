@@ -55,13 +55,14 @@ def readFileAsIs(filePath):
 def castStructuredArrayToRegular(arr):
     return arr.view((np.float, len(arr.dtype.names)))
 
-def filter_fields_by_name(names, regex):
+def filter_fields_by_name(names, regex, inverse = False):
     '''
     :param names:
     :param regex:
     :return: an array of names that the regex matched on
     '''
     vmatch = np.vectorize(lambda x:bool(regex.match(x)))
-    mask = vmatch(names)
+    mask = vmatch(names) #mask is True where name is matched by the regex
+    if inverse: mask = ~mask
     indices = np.where(mask)[0]
     return np.array(names)[indices]

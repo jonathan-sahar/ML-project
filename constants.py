@@ -11,7 +11,7 @@ CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA
 SICK_PATIENTS = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # 'DAISEY'
 PATIENTS = SICK_PATIENTS+CONTROL
 
-PATIENTS_test = ['APPLE'] #, 'VIOLET', 'DAISY'] # TODO: for testing!
+PATIENTS_test = ['APPLE','DAFODIL', 'VIOLET', 'DAISY'] # TODO: for testing!
 
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 # UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
@@ -30,14 +30,22 @@ UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
 
-UNIFIED_ENTIRE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
-UNIFIED_AGGREGATED_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
+UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
+UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
 
 UNIFIED_ENTIRE_LABELS_FILENAME = 'unified_entire_labels.csv'
 UNIFIED_AGGREGATED_LABELS_FILENAME = 'unified_aggregated_labels.csv'
 UNIFIED_ENTIRE_LABELS_PATH = os.path.join(UNIFIED_TABLES_FOLDER ,UNIFIED_ENTIRE_LABELS_FILENAME)
 UNIFIED_AGGREGATED_LABELS_PATH = os.path.join(UNIFIED_TABLES_FOLDER ,UNIFIED_AGGREGATED_LABELS_FILENAME)
 
+RESULTS_FOLDER = os.path.join(UNIFIED_TABLES_FOLDER,"results")
+
+SVM_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "svm_res_instance_per_entire_data.csv")
+SVM_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "svm_res_instance_per_aggregated_window.csv")
+LOGISTIC_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "logistic_res_instance_per_entire_data.csv")
+LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "logistic_res_instance_per_aggregated_window.csv")
+FOREST_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_entire_data.csv")
+FOREST_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_aggregated_window.csv")
 
 NUMBER_OF_ENTIRE_FEATURES = 40 #TODO not correct
 NUMBER_OF_FIVE_MINUTES_FEATURES = 40 #TODO not correct

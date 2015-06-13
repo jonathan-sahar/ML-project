@@ -108,7 +108,7 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows = None, windowTyp
     mask = np.zeros(len(fieldNames), dtype = bool)
     mask[top_indices] = True
     # The following is the freq-domain representation after compression: compressed by taking the on-average-best coefficients
-    top_coefficients = coefficients.T[mask, :]
+    top_coefficients = coefficients[mask, :]
     return headers,np.ravel(top_coefficients)
 
     # TODO: restore when we understand wavelet transform
@@ -164,8 +164,13 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
 #meant for 'entire' data
 def averageOnWindows(timeWindow, longTimeWindows = None, windowType = 'entire'):
     columns = longTimeWindows.dtype.names
-    means = [np.array(timeWindow[column]).mean() for column in columns]
-    return columns, means
+    r = re.compile(r'(.*DCT.*)')
+    fieldsToIgnore = filter_fields_by_name(columns,r)
+    columns = [c for c in columns if c not in fieldsToIgnore]
+    headers = getFieldNames(columns, ['average_on_windows'])
+    means = [np.array(longTimeWindows[column]).mean() for column in columns]
+    return headers, means
 
 def statsForLongTimeWindow():
     return
+

@@ -92,11 +92,14 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
     return listOfLossValuesPerFeature
 
 
-def plot(errorFeatureTupleList):
-    sorted(errorFeatureTupleList, lambda x: x[1])
-    print errorFeatureTupleList
+def plot(errorFeatureTupleDict, resultPath):
+    sortedErrors = sorted(errorFeatureTupleDict.items(), key= lambda tup: tup[1])
+    # sorted(errorFeatureTupleList, lambda x: x[1])
+    res = [list(t) for t in sortedErrors]
+    with open(resultPath, 'w') as file:
+        writer = csv.writer(file, lineterminator='\n')
+        writer.writerows(res)
     return
-
 def create_cross_validation_idxs(num_samples, num_folds):
     '''Creates num_folds different and foreign folds of the data.
     This method returns a collection of (training_samples_idxs, validation_samples_idxs) pairs,
@@ -133,38 +136,43 @@ def crossValidate(predictor, data, labels, lossFunction, numFolds):
 
 
 def predict():
+    try:
+        os.mkdir(RESULTS_FOLDER)
+    except WindowsError:
+        pass
     #linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
-    linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
+    linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_DATA_PATH)
     labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
 
     #labelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
     # labelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
-
-    # svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    # logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    # print "logistic results\n: {}".format(logisticRegLinePerPatientResults)
+    svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    print "svm done!"
+    logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
+    print "logisticReg done!"
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "hurray!"
-    exit()
+    print "randomForest done!"
+
+    plot(svmLinePerPatientResults, SVM_RES_ENTIRE_PATH)
+    plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
+    plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
 
-    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_PATH)
-    LabelsPerLines = readFileAsIs(UNIFIED_AGGREGATED_LABELS_PATH)
+
+    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
+    LabelsPerLines = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
 
-    plot(svmLinePerPatientResults)
-    plot(logisticRegLinePerPatientResults)
-    plot(randomForestLinePerPatientResults)
 
-    plot(svmLinePerFiveMinutesResults)
-    plot(logisticRegLinePerFiveMinutesResults)
-    plot(randomForestLinePerFiveMinutesResults)
+    plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
+    plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
+    plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
 
 if __name__=='__main__':
     predict()

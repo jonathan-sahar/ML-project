@@ -7,7 +7,6 @@ from utils import *
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
     '''
-
     :param aggregators:
     :param windowType:
     :param dataWindow:
@@ -26,12 +25,10 @@ def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
             header, data = func(dataWindow, aggregatedWindows, 'entire')
         headers.extend(header)
         aggregatedWindow = np.hstack((aggregatedWindow, np.atleast_2d(data)))
-
     return headers, aggregatedWindow
 
 def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWindows):
     '''
-
     :param aggregatorsList: list of functions that reduce the data in a window to a single line
     :param windowType: one of 'short' , 'long', 'entire'
     :param dataWindows: list of (structured) arrays
@@ -54,7 +51,7 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
             item = aggIter.next()
             _, row = aggregate(aggregatorsList, windowType, timeWindow, item)
             table.append(row)
-    else:
+    else: #windowType == 'entire':
         header, row = aggregate(aggregatorsList, windowType, dataWindows, aggregatedWindows)
         table = [row]
 
@@ -65,7 +62,6 @@ def createTimeWindowTable(aggregatorsList, windowType, dataWindows, aggregatedWi
     ret = np.array(rows, dtype=dt)
     return ret
 
-
 def divideToWindows(dataMatrix, windowLength):
     '''
     :param dataMatrix:
@@ -75,14 +71,11 @@ def divideToWindows(dataMatrix, windowLength):
     divided =  [dataMatrix[a:a+windowLength] for a in range(0, len(dataMatrix)-windowLength + 1, windowLength)]
     return  divided
 
-
-
-
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
     aggregatorsListShort = [numSamplesInFreqRange]
-    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange] #, waveletCompressForAllColoumns
-    aggregatorsListEntire = [statisticsForAllColoumns] #, waveletCompressForAllColoumns, averageOnWindows]
+    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange, waveletCompressForAllColoumns]
+    aggregatorsListEntire = [statisticsForAllColoumns, averageOnWindows, waveletCompressForAllColoumns]
 
     #initialize
     dataMatrix = dict()
@@ -106,9 +99,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         dataMatrix[patient] = patientData
 
         #divide to windows, and reduce/aggregate every window into a line.
-
         dataSubWindows = divideToWindows(patientData, SHORT_TIME_WINDOW) # dataSubWindows is a list of structured arrays.
-
 
         aggregatedSubWindows[patient] = createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None) #TODO check if easy to return the table
         # logger.info("first aggr subWindow:\n{}".format(aggregatedSubWindows[patient].dtype.names))
@@ -139,7 +130,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerows(patientTable)
         logger.info("Wrote aggregatedWindows table to File, patient: {}".format(patient))
 
-    with open(UNIFIED_AGGREGATED_PATH, 'w') as unified_entire_file:
+    with open(UNIFIED_AGGREGATED_DATA_PATH, 'w') as unified_entire_file:
         listOfPData = [aggregatedWindows[patient] for patient in PATIENTS_test]
         unified_aggregated_table = nprf.stack_arrays(tuple(listOfPData), usemask=False)
         writer = csv.writer(unified_entire_file, lineterminator='\n')
@@ -159,8 +150,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerow(aggregatedEntires[patient].dtype.names)
         writer.writerows(aggregatedEntires[patient])
 
-
-    with open(UNIFIED_ENTIRE_PATH, 'w') as unified_entire_file:
+    with open(UNIFIED_ENTIRE_DATA_PATH, '') as unified_entire_file:
         listOfPData = [aggregatedEntires[patient] for patient in PATIENTS_test]
         unified_entire_table =nprf.stack_arrays(tuple(listOfPData), usemask=False)
         writer = csv.writer(unified_entire_file, lineterminator='\n')
