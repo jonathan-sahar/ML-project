@@ -20,8 +20,8 @@ def scaleColumn(values):
         scaledList.append(scaledValue)
     return scaledList
 
-def scale():
-    #entireData = readFileToFloat(UNIFIED_ENTIRE_DATA_PATH)
+def scale(DATA_PATH, SCALED_DATA_PATH):
+    #entireData = readFileToFloat(DATA_PATH)
     entireData = readFileToFloat('C:\ML\parkinson\orEstimation\unified_entire.csv')
 
     features = entireData.dtype.names
@@ -37,10 +37,12 @@ def scale():
     scaledDataArray = np.array(scaledData)
     scaledDataArray = scaledDataArray.T
 
+    #with open(SCALED_DATA_PATH, 'w') as file:
     with open('C:\ML\parkinson\orEstimation\scaled_unified_entire.csv', 'w') as file:
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(features)
         writer.writerows(scaledDataArray)
 
 if __name__=='__main__':
-    scale()
+    scale(UNIFIED_ENTIRE_DATA_PATH, SCALED_UNIFIED_ENTIRE_DATA_PATH)
+    scale(UNIFIED_AGGREGATED_DATA_PATH, SCALED_UNIFIED_AGGREGATED_DATA_PATH)
