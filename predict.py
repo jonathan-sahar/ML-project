@@ -72,7 +72,6 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
     for feature in features:
         values = linePerPatientData[feature]
         dataForClassifier = [[v] for v in values]
-
         result = crossValidate(predictor, dataForClassifier, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
         listOfLossValuesPerFeature[feature] = error
@@ -82,13 +81,16 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
     listOfLossValuesPerFeature ['all'] = error
 
     if isEntire:
-        r = re.compile(r'(DCT_coeff_).*')
+        print "isEntire True!"
+        r = re.compile(r'(.*_DCT_coeff_).*')
         transformFeatures = filter_fields_by_name(linePerPatientData.dtype.names, r)
-        if len(transformFeatures) > 1:
-            result = crossValidate(predictor, data, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
-            error = np.mean(result)
-            listOfLossValuesPerFeature['transformation'] = error
-    print "predictByFeatures is done!"
+        assert len(transformFeatures) > 1, "no transform features!"
+        data = castStructuredArrayToRegular(linePerPatientData[transformFeatures])
+        result = crossValidate(predictor, data, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
+        error = np.mean(result)
+        listOfLossValuesPerFeature['transform_features'] = error
+        print listOfLossValuesPerFeature['transform_features']
+
     return listOfLossValuesPerFeature
 
 
@@ -96,6 +98,7 @@ def plot(errorFeatureTupleDict, resultPath):
     sortedErrors = sorted(errorFeatureTupleDict.items(), key= lambda tup: tup[1])
     # sorted(errorFeatureTupleList, lambda x: x[1])
     res = [list(t) for t in sortedErrors]
+    print res
     with open(resultPath, 'w') as file:
         writer = csv.writer(file, lineterminator='\n')
         writer.writerows(res)
@@ -140,36 +143,44 @@ def predict():
         os.mkdir(RESULTS_FOLDER)
     except WindowsError:
         pass
-    #linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_PATH)
     linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_DATA_PATH)
     labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
 
-    #labelsPerPatients = readFileAsIs(UNIFIED_ENTIRE_LABELS_PATH) #[0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1] #by the order in constants.py
-    # labelsPerPatients = [0,1,1,1,0,1,1,0,0,1,1,0,0,0,1,1]
 
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
+    #==============================================================================================
     svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "svm done!"
+    print "svm 1 done!"
     logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "logisticReg done!"
+    print "logisticReg 1 done!"
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "randomForest done!"
+    print "randomForest 1 done!"
 
+    print "plotting..."
     plot(svmLinePerPatientResults, SVM_RES_ENTIRE_PATH)
     plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     LabelsPerLines = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    #==============================================================================================
+
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
+    #==============================================================================================
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    print "svm 2 done!"
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    print "logisticReg 2 done!"
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    print "randomForest 2 done!"
 
+
+    print "plotting..."
     plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
     plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
     plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
+    #==============================================================================================
 
     #plotData(linePerPatientData, labelsPerPatients)
 

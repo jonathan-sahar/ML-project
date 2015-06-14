@@ -11,7 +11,7 @@ CONTROL = ['APPLE', 'DAFODIL', 'LILLY', 'ORANGE', 'ROSE', 'SUNFLOWER', 'SWEETPEA
 SICK_PATIENTS = ['CHERRY', 'CROCUS', 'DAISY',  'FLOX', 'IRIS', 'MAPLE', 'ORCHID', 'PEONY', 'VIOLET'] # 'DAISEY'
 PATIENTS = SICK_PATIENTS+CONTROL
 
-PATIENTS_test = ['APPLE','DAFODIL', 'VIOLET', 'DAISY'] # TODO: for testing!
+PATIENTS_test = PATIENTS # TODO: for testing!
 
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 # UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
@@ -24,8 +24,8 @@ SHORT_TABLE_PREFIX = 'SHORTFILE'
 LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
-# ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
-ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+# ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')

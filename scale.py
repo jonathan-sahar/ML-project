@@ -21,8 +21,8 @@ def scaleColumn(values):
     return scaledList
 
 def scale(DATA_PATH, SCALED_DATA_PATH):
-    #entireData = readFileToFloat(DATA_PATH)
-    entireData = readFileToFloat('C:\ML\parkinson\orEstimation\unified_entire.csv')
+    entireData = readFileToFloat(DATA_PATH)
+    # entireData = readFileToFloat('C:\ML\parkinson\orEstimation\unified_entire.csv')
 
     features = entireData.dtype.names
     scaledData = []
@@ -37,8 +37,8 @@ def scale(DATA_PATH, SCALED_DATA_PATH):
     scaledDataArray = np.array(scaledData)
     scaledDataArray = scaledDataArray.T
 
-    #with open(SCALED_DATA_PATH, 'w') as file:
-    with open('C:\ML\parkinson\orEstimation\scaled_unified_entire.csv', 'w') as file:
+    with open(SCALED_DATA_PATH, 'w') as file:
+    # with open('C:\ML\parkinson\orEstimation\scaled_unified_entire.csv', 'w') as file:
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(features)
         writer.writerows(scaledDataArray)

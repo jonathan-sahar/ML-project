@@ -75,7 +75,7 @@ def divideToWindows(dataMatrix, windowLength):
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
     aggregatorsListShort = [numSamplesInFreqRange]
-    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange, waveletCompressForAllColoumns]
+    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange]
     aggregatorsListEntire = [statisticsForAllColoumns, averageOnWindows, waveletCompressForAllColoumns]
 
     #initialize
@@ -151,6 +151,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerow(aggregatedEntires[patient].dtype.names)
         writer.writerows(aggregatedEntires[patient])
 
+    with open(UNIFIED_ENTIRE_DATA_PATH, 'w') as unified_entire_file:
+        listOfPData = [aggregatedEntires[patient] for patient in PATIENTS_test]
     with open(UNIFIED_ENTIRE_DATA_PATH, 'w') as unified_entire_file:
         listOfPData = [aggregatedEntires[patient] for patient in PATIENTS]
         unified_entire_table =nprf.stack_arrays(tuple(listOfPData), usemask=False)
