@@ -8,9 +8,11 @@ from utils import *
 # orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data - orig'
 # testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
 
-orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample_orig'
-testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+#orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample_orig'
+#testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
 
+orig_data_folder = 'C:\ML\parkinson\FIRSTDATA - Copy'
+testing_data_folder = 'C:\ML\parkinson\FIRSTDATA'
 
 restore_data(orig_data_folder, testing_data_folder)
 print "data restored from orig!"

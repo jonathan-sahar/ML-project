@@ -3,6 +3,7 @@ from constants import *
 from featureCalculationFunctions import *
 import numpy.lib.recfunctions as nprf
 from utils import *
+import splitToPatients
 
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):
@@ -84,7 +85,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     aggregatedWindows = dict()
     aggregatedLabels = []
     #create 5 sec per line table, per person
-    for patient in PATIENTS_test: # TODO: change back to PATIENTS!
+    for patient in PATIENTS: # TODO: change back to PATIENTS!
         #read patient data, separate between actual features and labels
         print "Generating features for ", patient
         patientData = readFileToFloat(os.path.join(outputDir, "DATAFILE_" + patient + ".csv"))
@@ -114,8 +115,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
 
     logger.info("Wrote aggregatedSubWindows table to File")
     #create 5 min per line table
-    assert len(PATIENTS_test) == len(dataMatrix), "len(PATIENTS_test)({}) != len(dataMatrix)({}) !: " \
-        .format(len(PATIENTS_test), len(dataMatrix))
+    assert len(PATIENTS) == len(dataMatrix), "len(PATIENTS)({}) != len(dataMatrix)({}) !: " \
+        .format(len(PATIENTS), len(dataMatrix))
     for patient, patientData in dataMatrix.items():
         longAggregatedFile = open(os.path.join(outputDir, "LONGFILE_" + patient + ".csv"), 'w')
         dataWindows = divideToWindows(patientData, LONG_TIME_WINDOW)
@@ -131,7 +132,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         logger.info("Wrote aggregatedWindows table to File, patient: {}".format(patient))
 
     with open(UNIFIED_AGGREGATED_DATA_PATH, 'w') as unified_entire_file:
-        listOfPData = [aggregatedWindows[patient] for patient in PATIENTS_test]
+        listOfPData = [aggregatedWindows[patient] for patient in PATIENTS]
         unified_aggregated_table = nprf.stack_arrays(tuple(listOfPData), usemask=False)
         writer = csv.writer(unified_entire_file, lineterminator='\n')
         writer.writerow(unified_aggregated_table.dtype.names)
@@ -150,8 +151,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerow(aggregatedEntires[patient].dtype.names)
         writer.writerows(aggregatedEntires[patient])
 
-    with open(UNIFIED_ENTIRE_DATA_PATH, '') as unified_entire_file:
-        listOfPData = [aggregatedEntires[patient] for patient in PATIENTS_test]
+    with open(UNIFIED_ENTIRE_DATA_PATH, 'w') as unified_entire_file:
+        listOfPData = [aggregatedEntires[patient] for patient in PATIENTS]
         unified_entire_table =nprf.stack_arrays(tuple(listOfPData), usemask=False)
         writer = csv.writer(unified_entire_file, lineterminator='\n')
         writer.writerow(unified_entire_table.dtype.names)

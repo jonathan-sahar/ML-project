@@ -27,7 +27,7 @@ def svmPredictLinePerPatient(linePerPatientData,linePerPatientLabels):
 
     #testing on all features at once:
     # results = crossValidate(predictor, linePerPatientData, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
-    print  "svmPredictLinePerPatient is done!"
+    #print  "svmPredictLinePerPatient is done!"
     return results
 
 
@@ -44,7 +44,7 @@ def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
 
 def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
     predictor = sklearn.svm.SVC()
-    results = predictByFeatures(predictor, linePerFiveMinutesData, linePerFiveMinutesLabels, False) #TODO maybe better creating lose function
+    results = predictByFeatures(predictor, linePerFiveMinutesData, linePerFiveMinutesLabels, False)
     return results
 
 def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
@@ -159,8 +159,6 @@ def predict():
     plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
-
-
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     LabelsPerLines = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
@@ -169,10 +167,11 @@ def predict():
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
 
-
     plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
     plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
     plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
+
+    #plotData(linePerPatientData, labelsPerPatients)
 
 if __name__=='__main__':
     predict()

@@ -1,6 +1,7 @@
 __author__ = 'Inspiron'
 
 from constants import *
+import csv
 
 def splitToPatients(outputDir = UNIFIED_TABLES_FOLDER):
     allLines = []

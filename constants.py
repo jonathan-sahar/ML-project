@@ -25,13 +25,17 @@ LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
 # ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
-ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
 
 UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
 UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
+
+SCALED_UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'scaled_unified_entire.csv')
+SCALED_UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'scaled_unified_aggregated_subWindows.csv')
+
 
 UNIFIED_ENTIRE_LABELS_FILENAME = 'unified_entire_labels.csv'
 UNIFIED_AGGREGATED_LABELS_FILENAME = 'unified_aggregated_labels.csv'
@@ -49,7 +53,7 @@ FOREST_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_
 
 NUMBER_OF_ENTIRE_FEATURES = 40 #TODO not correct
 NUMBER_OF_FIVE_MINUTES_FEATURES = 40 #TODO not correct
-NUMBER_OF_FOLDS = 3 #16 choose 2
+NUMBER_OF_FOLDS = 8 #16 choose 2
 
 
 entireFeatures = []

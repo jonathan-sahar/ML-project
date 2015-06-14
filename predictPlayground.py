@@ -7,7 +7,7 @@ import csv
 import matplotlib.pyplot as plt
 import itertools
 import re
-
+'''
 
 def readData():
     filePath = 'C:\ML\parkinson\orEstimation\SVM_IMPUT.csv'
@@ -59,12 +59,12 @@ def predictByOneFeature(X):
     error = pred(X)
     return error
 
-'''
+
 for all patients,
 line per entire data - predict by each feature of the line, all the features, and features of transform
 average of all lines per 5 min of patient - get one line per patient - should be just another features in the 'line per patient'
 lines per 5 min of data - predict by each feature, all the features.
-'''
+
 
 def getTransformationFeatures():
     return
@@ -177,7 +177,7 @@ if __name__=='__main__':
 
 
 
-'''
+
 
     ((data_train, label_train), (data_test, label_test)) = load_data()
 
@@ -186,12 +186,12 @@ if __name__=='__main__':
     errs = zeros([num_of_lambdas,10,2])
     i = 0
     folds = create_cross_validation_idxs(size(label_train), 8)
-    # print("len of folds is {}\nvalue of i is {}".format(len(folds), i))
-    for (train_indices, vld_indices) in folds:
-        for ind,lambda_val in enumerate(lambda_vals):
-            # print("ind is {}\n".format(ind))
+   ''' # print("len of folds is {}\nvalue of i is {}".format(len(folds), i))
+    #for (train_indices, vld_indices) in folds:
+        #for ind,lambda_val in enumerate(lambda_vals):
+     # '''      # print("ind is {}\n".format(ind))
             #sub-divide to training and validation sets:
-            data_vld, label_vld = data_train[vld_indices, :],label_train[vld_indices]
+     '''       data_vld, label_vld = data_train[vld_indices, :],label_train[vld_indices]
             data_train_fold, label_train_fold = data_train[train_indices, :], label_train[train_indices]
 
             #Solve kernelized ridge regression:
@@ -236,7 +236,7 @@ if __name__=='__main__':
     graph.grid()
     plt.show()
 
-'''
+    '''
 
 
 '''
@@ -245,3 +245,4 @@ gamma=0.0, kernel='rbf', max_iter=-1, probability=False, random_state=None,
 shrinking=True, tol=0.001, verbose=False)
 '''
 
+'''
