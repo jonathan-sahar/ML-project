@@ -24,8 +24,8 @@ SHORT_TABLE_PREFIX = 'SHORTFILE'
 LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
-ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-# ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+#ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
@@ -35,7 +35,6 @@ UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggr
 
 SCALED_UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'scaled_unified_entire.csv')
 SCALED_UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'scaled_unified_aggregated_subWindows.csv')
-
 
 UNIFIED_ENTIRE_LABELS_FILENAME = 'unified_entire_labels.csv'
 UNIFIED_AGGREGATED_LABELS_FILENAME = 'unified_aggregated_labels.csv'
@@ -68,6 +67,9 @@ MAX_TIME_DIFF = 2 #seconds
 
 delete = False
 
+
+selectedFeatures = ['MFCC_12_max', 'PSD_250_max_average_on_windows', 'z_PSD_10_max', \
+                        'MFCC_3_max_average_on_windows','y_max_deviation_max_average_on_windows']
 
 # FOR TESTING PURPOSES
 

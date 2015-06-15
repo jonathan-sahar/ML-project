@@ -2,9 +2,9 @@ __author__ = 'Inspiron'
 
 import shutil
 from datetime import datetime
-from constants import *
-from utils import *
-from structuredDataConstants import accl_fields, audio_fields
+
+from utils.constants import *
+from utils.utils import *
 
 
 def deleteInvalidData(dirname, filenames):

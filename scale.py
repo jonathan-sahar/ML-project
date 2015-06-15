@@ -1,9 +1,7 @@
 __author__ = 'Inspiron'
 
-from constants import *
-from utils import *
-import csv
-import numpy as np
+from utils.constants import *
+from utils.utils import *
 
 #SCALED_UNIFIED_AGGREGATED_DATA_PATH
 #UNIFIED_ENTIRE_DATA_PATH
@@ -29,10 +27,8 @@ def scale(DATA_PATH, SCALED_DATA_PATH):
 
     for feature in features:
         values = entireData[feature]
-        print values
         scaledValues = scaleColumn(values)
         scaledData.append(scaledValues)
-    print scaledData
 
     scaledDataArray = np.array(scaledData)
     scaledDataArray = scaledDataArray.T
@@ -43,6 +39,9 @@ def scale(DATA_PATH, SCALED_DATA_PATH):
         writer.writerow(features)
         writer.writerows(scaledDataArray)
 
-if __name__=='__main__':
+def scaleData():
     scale(UNIFIED_ENTIRE_DATA_PATH, SCALED_UNIFIED_ENTIRE_DATA_PATH)
     scale(UNIFIED_AGGREGATED_DATA_PATH, SCALED_UNIFIED_AGGREGATED_DATA_PATH)
+
+if __name__=='__main__':
+    scaleData()

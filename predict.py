@@ -1,8 +1,10 @@
 __author__ = 'Inspiron'
 
-from constants import *
 from random import shuffle
-from utils import *
+
+from utils.constants import *
+from utils.utils import *
+
 #from sklearn import svm #TODO other learners as well
 import sklearn.svm
 import sklearn.ensemble
@@ -150,11 +152,11 @@ def predict():
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
     #==============================================================================================
     svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "svm 1 done!"
+    print "svm entire done!"
     logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "logisticReg 1 done!"
+    print "logisticReg entire done!"
     randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "randomForest 1 done!"
+    print "randomForest entire done!"
 
     print "plotting..."
     plot(svmLinePerPatientResults, SVM_RES_ENTIRE_PATH)
@@ -169,18 +171,17 @@ def predict():
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
     svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
-    print "svm 2 done!"
+    print "svm windows done!"
     logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
-    print "logisticReg 2 done!"
+    print "logisticReg windows done!"
     randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
-    print "randomForest 2 done!"
+    print "randomForest windows done!"
 
 
     print "plotting..."
     plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
     plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
     plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
-    #==============================================================================================
 
     #plotData(linePerPatientData, labelsPerPatients)
 

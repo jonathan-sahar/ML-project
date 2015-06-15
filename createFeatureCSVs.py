@@ -1,9 +1,8 @@
 __author__ = 'Inspiron'
-from constants import *
-from featureCalculationFunctions import *
 import numpy.lib.recfunctions as nprf
-from utils import *
-import splitToPatients
+
+from featureCalculationFunctions import *
+from utils.utils import *
 
 
 def aggregate(aggregators, windowType, dataWindow, aggregatedWindows):

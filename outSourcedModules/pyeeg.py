@@ -126,7 +126,7 @@ def embed_seq(X,Tau,D):
 
 	Examples
 	---------------
-	>>> import pyeeg
+	>>> from outSourcedModules import pyeeg
 	>>> a=range(0,9)
 	>>> pyeeg.embed_seq(a,1,4)
 	array([[ 0.,  1.,  2.,  3.],
@@ -135,13 +135,13 @@ def embed_seq(X,Tau,D):
 	       [ 3.,  4.,  5.,  6.],
 	       [ 4.,  5.,  6.,  7.],
 	       [ 5.,  6.,  7.,  8.]])
-	>>> pyeeg.embed_seq(a,2,3)
+	>>> from outSourcedModules import pyeeg pyeeg.embed_seq(a,2,3)
 	array([[ 0.,  2.,  4.],
 	       [ 1.,  3.,  5.],
 	       [ 2.,  4.,  6.],
 	       [ 3.,  5.,  7.],
 	       [ 4.,  6.,  8.]])
-	>>> pyeeg.embed_seq(a,4,1)
+	>>> from outSourcedModules import pyeeg pyeeg.embed_seq(a,4,1)
 	array([[ 0.],
 	       [ 1.],
 	       [ 2.],
@@ -801,7 +801,7 @@ def dfa(X, Ave = None, L = None):
 
 	Examples
 	--------
-	>>> import pyeeg
+	>>> from outSourcedModules import pyeeg
 	>>> from numpy.random import randn
 	>>> print pyeeg.dfa(randn(4096))
 	0.490035110345

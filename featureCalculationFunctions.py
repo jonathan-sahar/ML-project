@@ -1,13 +1,15 @@
 __author__ = 'Jonathan'
+
 from itertools import product
 import scipy.stats as stats
 import scipy.fftpack as fft
-from pyeeg import dfa
-from entropy import entropy_ci
 
-from constants import *
-from utils import *
-from structuredDataConstants import accl_fields, audio_fields, psd_D
+from outSourcedModules.pyeeg import dfa
+from outSourcedModules.entropy import entropy_ci
+from utils.constants import *
+from utils.utils import *
+from utils.structuredDataConstants import accl_fields, psd_D
+
 
 def getFieldNames(origNames, modifiers):
     '''
