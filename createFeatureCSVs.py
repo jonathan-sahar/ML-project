@@ -102,8 +102,8 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         dataSubWindows = divideToWindows(patientData, SHORT_TIME_WINDOW) # dataSubWindows is a list of structured arrays.
 
         aggregatedSubWindows[patient] = createTimeWindowTable(aggregatorsListShort, 'short', dataSubWindows, None) #TODO check if easy to return the table
-        # logger.info("first aggr subWindow:\n{}".format(aggregatedSubWindows[patient].dtype.names))
-        # logger.info("{}".format(aggregatedSubWindows[patient][0]))
+        logger.info("first aggr subWindow:\n{}".format(aggregatedSubWindows[patient].dtype.names))
+        logger.info("{}".format(aggregatedSubWindows[patient][0]))
 
         #write to patient file
         shortAggregatedFile = open(os.path.join(outputDir, "SHORTFILE_" + patient + ".csv"), 'w')

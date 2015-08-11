@@ -7,7 +7,6 @@ import os
 import numpy as np
 
 
-
 def print_doubled_fields(names):
     l = [item for item, count in Counter(names).items() if count > 1]
     if len(l) > 0:

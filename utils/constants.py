@@ -25,7 +25,9 @@ LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
 #ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+#ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
+ROOT_DATA_FOLDER = 'C:\ML\parkinson\SECONDDATA'
+
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
@@ -50,6 +52,9 @@ LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "logistic_res_instance_
 FOREST_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_entire_data.csv")
 FOREST_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_aggregated_window.csv")
 
+FEATURE_SELECTION_LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "selected_features.csv")
+
+
 NUMBER_OF_ENTIRE_FEATURES = 40 #TODO not correct
 NUMBER_OF_FIVE_MINUTES_FEATURES = 40 #TODO not correct
 NUMBER_OF_FOLDS = 8 #16 choose 2
@@ -68,8 +73,22 @@ MAX_TIME_DIFF = 2 #seconds
 delete = False
 
 
-selectedFeatures = ['MFCC_12_max', 'PSD_250_max_average_on_windows', 'z_PSD_10_max', \
-                        'MFCC_3_max_average_on_windows','y_max_deviation_max_average_on_windows']
+selectedFeatures1 = ['MFCC_12_max', 'PSD_250_max_average_on_windows', 'z_PSD_10_max', \
+                        'MFCC_3_max_average_on_windows','y_max_deviation_max_average_on_windows', 'MFCC_7_max_average_on_windows']
+
+selectedFeatures2 = ['MFCC_3_max_average_on_windows', 'x_PSD_6_max_average_on_windows', 'y_PSD_3_max', \
+                        'z_PSD_6_max','PSD_500_max', 'PSD_250_max']
+
+selectedFeatures3 = ['z_PSD_1_max_average_on_windows', 'MFCC_9_max_average_on_windows', 'MFCC_10_max', \
+                        'MFCC_9_max','y_PSD_1_max_average_on_windows']
+
+selectedFeaturesT = ['x_max_deviation_DCT_coeff_2', 'MFCC_6_DCT_coeff_3', 'y_PSD_10_DCT_coeff_3', 'MFCC_12_DCT_coeff_2', \
+                            'x_PSD_10_DCT_coeff_4', 'z_PSD_1_DCT_coeff_1', 'MFCC_2_DCT_coeff_4']
+
+
+selectedFeaturesAgg1 = ['MFCC_12_max', 'z_PSD_10_max', 'y_PSD_3_max', \
+                        'z_PSD_6_max','PSD_500_max', 'PSD_250_max', 'MFCC_9_max', 'MFCC_10_max']
+
 
 # FOR TESTING PURPOSES
 

@@ -15,8 +15,14 @@ from visualization import visualFeatures
 #orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample_orig'
 #testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
 
-orig_data_folder = 'C:\ML\parkinson\FIRSTDATA - Copy'
-testing_data_folder = 'C:\ML\parkinson\FIRSTDATA'
+#orig_data_folder = 'C:\ML\parkinson\DATA bckp'
+#testing_data_folder = 'C:\ML\parkinson\DATA'
+
+orig_data_folder = 'C:\ML\parkinson\SECONDDATA - Copy'
+testing_data_folder = 'C:\ML\parkinson\SECONDDATA'
+
+
+print "here we go!"
 
 restore_data(orig_data_folder, testing_data_folder)
 print "data restored from orig!"

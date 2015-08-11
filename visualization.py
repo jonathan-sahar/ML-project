@@ -32,17 +32,21 @@ def fuck():
     return 0
 
 
-def createOnlyBestColumns(SCALED_DATA_PATH):
+def createOnlyBestColumns(SCALED_DATA_PATH, selectedFeatures, isAggregated):
 
+    NUM_LINES_TO_SKIP = 50
     entireData = readFileToFloat(SCALED_DATA_PATH)
     #entireData = readFileToFloat('C:\ML\parkinson\orEstimation\scaled_unified_entire.csv')
+
+    if isAggregated == True:
+        entireData = entireData[range(0,len(entireData), NUM_LINES_TO_SKIP)]
 
     data = []
     for feature in selectedFeatures:
        data.append(entireData[feature])
     return data
 
-def visualization(visualData, labeledData):
+def visualization(visualData, labeledData, selectedFeatures, fileName, isAggregated):
     '''len of data is num of instances - X axis - the number of the instance
     0-1 is the values range - Y axis - the value of the feature
     every column is a graph'''
@@ -81,11 +85,12 @@ def visualization(visualData, labeledData):
     plt.title('                       healthy', loc = 'left')
     plt.title('sick                                      ', loc = 'right')
 
-    ax1.set_xticks(range(0, len(plottingData1)), minor=False)
-    ax1.set_xticks(np.concatenate([np.arange(0.5, 15.5, 1.0), np.arange(6.4, 6.6, 0.01)]), minor=True)
-    #ax1.xaxis.grid(True, which='major')
-    ax1.xaxis.grid(True, which='minor')
-    #ax1.xaxis.grid()
+    if isAggregated == False:
+        ax1.set_xticks(range(0, len(plottingData1)), minor=False)
+        ax1.set_xticks(np.concatenate([np.arange(0.5, 15.5, 1.0), np.arange(6.4, 6.6, 0.01)]), minor=True)
+        #ax1.xaxis.grid(True, which='major')
+        ax1.xaxis.grid(True, which='minor')
+        #ax1.xaxis.grid()
 
     ax1.plot(range(0, len(plottingData1)), plottingData1,'o', lw=3, label = selectedFeatures[0], alpha=0.5)
     ax2.plot(range(0, len(plottingData2)), plottingData2,'o', lw=3, label = selectedFeatures[1], alpha=0.5)
@@ -119,13 +124,24 @@ def visualization(visualData, labeledData):
     # Put a legend to the right of the current axis
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
-    plt.savefig(os.path.join(RESULTS_FOLDER,'visualization1.png'))
+    plt.savefig(os.path.join(RESULTS_FOLDER,fileName))
+    #plt.show()
 
 def visualFeatures():
-    visualData = createOnlyBestColumns(SCALED_UNIFIED_ENTIRE_DATA_PATH)
-    visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH)
-    #visualData = createOnlyBestColumns(SCALED_UNIFIED_AGGREGATED_DATA_PATH)
-    #visualization(visualData, UNIFIED_AGGREGATED_LABELS_FILENAME)
+    visualData = createOnlyBestColumns(SCALED_UNIFIED_ENTIRE_DATA_PATH, selectedFeatures1, False)
+    visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeatures1, 'visualization1.png', False)
+    visualData = createOnlyBestColumns(SCALED_UNIFIED_ENTIRE_DATA_PATH, selectedFeatures2, False)
+    visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeatures2, 'visualization2.png', False)
+    visualData = createOnlyBestColumns(SCALED_UNIFIED_ENTIRE_DATA_PATH, selectedFeatures3, False)
+    visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeatures3, 'visualization3.png', False)
+    visualData = createOnlyBestColumns(SCALED_UNIFIED_ENTIRE_DATA_PATH, selectedFeaturesT, False)
+    visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeatures3, 'visualizationT.png', False)
+    visualData = createOnlyBestColumns(SCALED_UNIFIED_AGGREGATED_DATA_PATH, selectedFeaturesAgg1, True)
+    visualization(visualData, UNIFIED_AGGREGATED_LABELS_PATH, selectedFeaturesAgg1, 'visualizationAgg1.png', True)
+    #visualData = createOnlyBestColumns(SCALED_UNIFIED_AGGREGATED_DATA_PATH, selectedFeatures2, True)
+    #visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeaturesAgg2, 'visualization2.png')
+    #visualData = createOnlyBestColumns(SCALED_UNIFIED_AGGREGATED_DATA_PATH, selectedFeatures3, True)
+    #visualization(visualData, UNIFIED_ENTIRE_LABELS_PATH, selectedFeaturesAgg3, 'visualization3.png')
 
 if __name__=='__main__':
     visualFeatures()

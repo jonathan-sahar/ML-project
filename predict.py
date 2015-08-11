@@ -9,6 +9,7 @@ from utils.utils import *
 import sklearn.svm
 import sklearn.ensemble
 import sklearn.linear_model
+import FeatureSelection
 
 '''
 for all patients,
@@ -17,9 +18,6 @@ average of all lines per 5 min of patient - get one line per patient - should be
 lines per 5 min of data - predict by each feature, all the features.
 '''
 
-
-def getTransformationFeatures():
-    return []
 
 
 def svmPredictLinePerPatient(linePerPatientData,linePerPatientLabels):
@@ -55,14 +53,14 @@ def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinut
     return results
 
 def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
-    predictor = sklearn.ensemble.RandomForestClassifier(65) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    predictor = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
     results = predictByFeatures(predictor, linePerFiveMinutesData,linePerFiveMinutesLabels, False)
     return results
 
 def lossFunction(estimator, X, y):
     loss = 0.0
     for data,label in zip(X,y):
-        if estimator.predict(data) != label:
+        if estimator.predict(data)[0] != label:
             loss += 1
     loss = loss / len(X)
     return loss
@@ -105,6 +103,7 @@ def plot(errorFeatureTupleDict, resultPath):
         writer = csv.writer(file, lineterminator='\n')
         writer.writerows(res)
     return
+
 def create_cross_validation_idxs(num_samples, num_folds):
     '''Creates num_folds different and foreign folds of the data.
     This method returns a collection of (training_samples_idxs, validation_samples_idxs) pairs,
@@ -165,6 +164,10 @@ def predict():
 
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     LabelsPerLines = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+
+    selectedFeatures = FeatureSelection(scaledLinePerPatientData, labelsPerPatients)
+    print "the selected features are :"
+    print selectedFeatures
     #==============================================================================================
 
 
