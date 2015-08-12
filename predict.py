@@ -21,43 +21,6 @@ lines per 5 min of data - predict by each feature, all the features.
 
 
 
-def svmPredictLinePerPatient(linePerPatientData,linePerPatientLabels):
-    predictor = sklearn.svm.SVC()
-
-    results = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
-
-    #testing on all features at once:
-    # results = crossValidate(predictor, linePerPatientData, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
-    #print  "svmPredictLinePerPatient is done!"
-    return results
-
-
-def logisticRegPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
-    predictor = sklearn.linear_model.LogisticRegression('l2', True)
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
-    return results
-
-
-def randomForestPredictLinePerPatient(linePerPatientData,LabelsPerPatients):
-    predictor = sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
-    results = predictByFeatures(predictor, linePerPatientData, LabelsPerPatients, True)
-    return results
-
-def svmPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
-    predictor = sklearn.svm.SVC()
-    results = predictByFeatures(predictor, linePerFiveMinutesData, linePerFiveMinutesLabels, False)
-    return results
-
-def logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
-    predictor = sklearn.linear_model.LogisticRegression('l2', False)
-    results = predictByFeatures(predictor, linePerFiveMinutesData,linePerFiveMinutesLabels, False)
-    return results
-
-def randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesLabels):
-    predictor = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    results = predictByFeatures(predictor, linePerFiveMinutesData,linePerFiveMinutesLabels, False)
-    return results
-
 def lossFunction(estimator, X, y):
     loss = 0.0
     for data,label in zip(X,y):
@@ -145,22 +108,31 @@ def predictOnEntire():
     # learning on "Entire"
     #==============================================================================================
     linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_DATA_PATH)
-    labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
+    linePerPatientLabels = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
 
 
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
     #==============================================================================================
-    svmLinePerPatientResults = svmPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "svm entire done!"
-    logisticRegLinePerPatientResults = logisticRegPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "logisticReg entire done!"
-    randomForestLinePerPatientResults = randomForestPredictLinePerPatient(linePerPatientData,labelsPerPatients)
-    print "randomForest entire done!"
+
+    predictor = sklearn.svm.SVC()
+    svmLinePerPatientResults  = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
+    print "svm on entire is done!"
+
+    predictor = sklearn.linear_model.LogisticRegression('l2', True)
+    logisticRegLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
+    print "logisticReg on entire is done!"
+
+
+    predictor = sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
+    randomForestLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
+    print "randomForest on entire is done!"
+
 
     print "plotting..."
     plot(svmLinePerPatientResults, SVM_RES_ENTIRE_PATH)
     plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
+
 
 def predictOnWindows():
     # learning on data divided into time windows
@@ -168,22 +140,26 @@ def predictOnWindows():
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
-    scaler = StandardScaler()
-    linePerFiveMinutesData = scaler.fit_transform(linePerFiveMinutesData)
-
     selectedFeatures = SelectFeatures(linePerFiveMinutesData, linePerFiveMinutesLabels)
     print "the selected features are: ", selectedFeatures
+    selectedFeaturesData = [linePerFiveMinutesData[f] for f in selectedFeatures]
     #==============================================================================================
 
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
-    print "svm windows done!"
-    logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
-    print "logisticReg windows done!"
-    randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
-    print "randomForest windows done!"
+    predictor = sklearn.svm.SVC()
+    svmLinePerFiveMinutesResults  = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
+    print "svm on windows is done!"
+
+    predictor = sklearn.linear_model.LogisticRegression('l2', False)
+    logisticRegLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
+    print "logisticReg on windows is done!"
+
+
+    predictor = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    randomForestLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
+    print "randomForest on windows is done!"
 
 
     print "plotting..."
