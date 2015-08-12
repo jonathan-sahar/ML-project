@@ -1,0 +1,20 @@
+Index: C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py
+===================================================================
+--- C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py	(revision )
++++ C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py	(revision )
+@@ -337,6 +337,15 @@
+             X_train, y_train = _safe_split(self.estimator, X, y, train)
+             X_test, y_test = _safe_split(self.estimator, X, y, test, train)
+ 
++            # =============================================================
++            # Jonathan's additions 12.8.15
++            # Note: scaler returns a copy of the original data by default, so we're behaving like "const".
++            from sklearn.preprocessing import StandardScaler
++            scaler = StandardScaler()
++            X_train = scaler.fit_transform(X_train)
++            X_test = scaler.transform(X_test)
++            # =============================================================
++
+             # Compute a full ranking of the features
+             ranking_ = rfe.fit(X_train, y_train).ranking_
+             # Score each subset of features

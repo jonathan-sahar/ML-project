@@ -24,9 +24,12 @@ SHORT_TABLE_PREFIX = 'SHORTFILE'
 LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
-#ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
-#ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
-ROOT_DATA_FOLDER = 'C:\ML\parkinson\SECONDDATA'
+#Jonathan
+ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
+
+#Tomer
+# ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
+# ROOT_DATA_FOLDER = 'C:\ML\parkinson\SECONDDATA'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 

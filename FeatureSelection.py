@@ -4,11 +4,11 @@ from utils.constants import *
 from utils.utils import *
 import sklearn
 import numpy as np
-from sklearn.feature_selection import *
-
+from sklearn.feature_selection import RFECV
+from sklearn.linear_model import LogisticRegression
 
 def SelectFeatures(featuresStructuresArray, labels):
-    estimator = sklearn.linear_model.LogisticRegression('l2', False)
+    estimator = LogisticRegression('l2', False)
 
     featureNames = featuresStructuresArray.dtype.names
     featureData = castStructuredArrayToRegular(featuresStructuresArray)

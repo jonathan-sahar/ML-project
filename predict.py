@@ -9,7 +9,8 @@ from utils.utils import *
 import sklearn.svm
 import sklearn.ensemble
 import sklearn.linear_model
-import FeatureSelection
+from FeatureSelection import SelectFeatures
+from sklearn.preprocessing import StandardScaler
 
 '''
 for all patients,
@@ -139,11 +140,10 @@ def crossValidate(predictor, data, labels, lossFunction, numFolds):
     return errors
 
 
-def predict():
-    try:
-        os.mkdir(RESULTS_FOLDER)
-    except WindowsError:
-        pass
+
+def predictOnEntire():
+    # learning on "Entire"
+    #==============================================================================================
     linePerPatientData = readFileToFloat(UNIFIED_ENTIRE_DATA_PATH)
     labelsPerPatients = readFileToFloat(UNIFIED_ENTIRE_LABELS_PATH, names = None)
 
@@ -162,22 +162,27 @@ def predict():
     plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
+def predictOnWindows():
+    # learning on data divided into time windows
+    #==============================================================================================
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
-    LabelsPerLines = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
-    selectedFeatures = FeatureSelection(scaledLinePerPatientData, labelsPerPatients)
-    print "the selected features are :"
-    print selectedFeatures
+    scaler = StandardScaler()
+    linePerFiveMinutesData = scaler.fit_transform(linePerFiveMinutesData)
+
+    selectedFeatures = SelectFeatures(linePerFiveMinutesData, linePerFiveMinutesLabels)
+    print "the selected features are: ", selectedFeatures
     #==============================================================================================
 
 
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    svmLinePerFiveMinutesResults = svmPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
     print "svm windows done!"
-    logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    logisticRegLinePerFiveMinutesResults = logisticRegPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
     print "logisticReg windows done!"
-    randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,LabelsPerLines)
+    randomForestLinePerFiveMinutesResults = randomForestPredictLinePerFiveMinutes(linePerFiveMinutesData,linePerFiveMinutesData)
     print "randomForest windows done!"
 
 
@@ -185,6 +190,19 @@ def predict():
     plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
     plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
     plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
+
+def predict():
+    try:
+        os.mkdir(RESULTS_FOLDER)
+    except WindowsError:
+        pass
+
+    # predictOnEntire()
+    predictOnWindows()
+
+
+
+
 
     #plotData(linePerPatientData, labelsPerPatients)
 
