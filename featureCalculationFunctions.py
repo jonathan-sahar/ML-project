@@ -145,7 +145,6 @@ freq_domain_func_pointers = [()]
 
 #operates in a window
 def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = 'long'):
-    print "inStatistics"
     '''
     :param timeWindow:
     :param shortTimeWindows:
