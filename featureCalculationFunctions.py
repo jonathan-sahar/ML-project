@@ -145,6 +145,7 @@ freq_domain_func_pointers = [()]
 
 #operates in a window
 def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = 'long'):
+    print "inStatistics"
     '''
     :param timeWindow:
     :param shortTimeWindows:
@@ -155,11 +156,13 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
     fieldNames = getFieldNames(names, [touple[1] for touple in stat_func_pointers])
     row = np.atleast_2d([])
     columns = [timeWindow[fieldName] for fieldName in names]
+    print columns
     for column in columns:
         features_from_col = [np.array((func(column))) for func, _ in stat_func_pointers]
         v= np.array([features_from_col])
         row = np.hstack((row, v))
     row = np.array(row)
+
     return fieldNames, row
 
 #meant for 'entire' data

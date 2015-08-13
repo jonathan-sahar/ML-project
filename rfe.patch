@@ -1,7 +1,7 @@
-Index: C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py
+Index: C:\Users\Inspiron\Anaconda\Lib\site-packages\sklearn\feature_selection\rfe.py
 ===================================================================
---- C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py	(revision )
-+++ C:/Anaconda/Lib/site-packages/sklearn/feature_selection/rfe.py	(revision )
+--- C:\Users\Inspiron\Anaconda\Lib\site-packages\sklearn\feature_selection\rfe.py	(revision )
++++ C:\Users\Inspiron\Anaconda\Lib\site-packages\sklearn\feature_selection\rfe.py	(revision )
 @@ -337,6 +337,15 @@
              X_train, y_train = _safe_split(self.estimator, X, y, train)
              X_test, y_test = _safe_split(self.estimator, X, y, test, train)

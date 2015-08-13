@@ -152,10 +152,13 @@ def predictOnWindows():
     svmLinePerFiveMinutesResults  = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
     print "svm on windows is done!"
 
-    predictor = sklearn.linear_model.LogisticRegression('l2', False)
+    predictor = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
     logisticRegLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
     print "logisticReg on windows is done!"
 
+    predictor = sklearn.linear_model.LogisticRegression('l1', dual = False, multi_class='ovr')
+    logisticRegLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
+    print "logisticReg on windows is done!"
 
     predictor = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
     randomForestLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)

@@ -2,7 +2,7 @@ __author__ = 'Inspiron'
 
 from utils.constants import *
 from utils.utils import *
-import sklearn
+from sklearn.linear_model import LogisticRegression
 import numpy as np
 from sklearn.feature_selection import RFECV
 from sklearn.linear_model import LogisticRegression

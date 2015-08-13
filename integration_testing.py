@@ -18,8 +18,8 @@ from visualization import visualFeatures
 #orig_data_folder = 'C:\ML\parkinson\DATA bckp'
 #testing_data_folder = 'C:\ML\parkinson\DATA'
 
-orig_data_folder = 'C:\ML\parkinson\SECONDDATA - Copy'
-testing_data_folder = 'C:\ML\parkinson\SECONDDATA'
+orig_data_folder = 'C:\ML\parkinson\FIRSTDATA - Copy'
+testing_data_folder = 'C:\ML\parkinson\FIRSTDATA'
 
 
 print "here we go!"
