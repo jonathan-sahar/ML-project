@@ -11,6 +11,7 @@ import sklearn.ensemble
 import sklearn.linear_model
 from FeatureSelection import SelectFeatures
 from sklearn.preprocessing import StandardScaler
+from sklearn.cross_validation import LeavePLabelOut
 
 '''
 for all patients,
@@ -18,8 +19,6 @@ line per entire data - predict by each feature of the line, all the features, an
 average of all lines per 5 min of patient - get one line per patient - should be just another features in the 'line per patient'
 lines per 5 min of data - predict by each feature, all the features.
 '''
-
-
 
 def lossFunction(estimator, X, y):
     loss = 0.0
@@ -58,7 +57,7 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
     return listOfLossValuesPerFeature
 
 
-def plot(errorFeatureTupleDict, resultPath):
+def  plot(errorFeatureTupleDict, resultPath):
     sortedErrors = sorted(errorFeatureTupleDict.items(), key= lambda tup: tup[1])
     # sorted(errorFeatureTupleList, lambda x: x[1])
     res = [list(t) for t in sortedErrors]
@@ -134,41 +133,57 @@ def predictOnEntire():
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
 
-def predictOnWindows():
+
+def tuneAndTrain(predictor, data, labels, numFolds, patientIds, lossFunction = lossFunction):
+    folds = LeavePLabelOut(patientIds, p=2)
+    errors = []
+
+    for trainIndices, testIndices in folds:
+        if np.all(trainlabels == trainlabels[0]): #can't train on elements that are all from the same group
+            continue
+
+        #Tuning
+        trainData = [data[i] for i in trainIndices]
+        trainlabels = [labels[i] for i in trainIndices]
+        testData = [data[i] for i in testIndices]
+        testLabels = [labels[i] for i in testIndices]
+        selectedFeatures = SelectFeatures(trainData, trainlabels)
+        selectedFeaturesTrainData = [trainData[f] for f in selectedFeatures]
+        selectedFeaturesTestData = [testData[f] for f in selectedFeatures]
+        predictor = optimizeHyperParams(predictor, selectedFeaturesTrainData) #todo maybe add a string to desribe the predictor
+
+        #Training
+        predictor.fit(selectedFeaturesTrainData, trainlabels)
+
+        #Testing
+        errors.append(lossFunction(predictor, selectedFeaturesTestData, testLabels))
+    return np.array(errors).mean()
+
+def predictOnWindows(data, lables):
     # learning on data divided into time windows
     #==============================================================================================
-    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
-    linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
-    selectedFeatures = SelectFeatures(linePerFiveMinutesData, linePerFiveMinutesLabels)
-    print "the selected features are: ", selectedFeatures
-    selectedFeaturesData = [linePerFiveMinutesData[f] for f in selectedFeatures]
+
     #==============================================================================================
-
-
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictor = sklearn.svm.SVC()
-    svmLinePerFiveMinutesResults  = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
-    print "svm on windows is done!"
+    predictors = {}
+    results = {}
 
-    predictor = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    logisticRegLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
-    print "logisticReg on windows is done!"
+    predictors['SVM'] = sklearn.svm.SVC()
+    predictors['logisticReg'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
 
-    predictor = sklearn.linear_model.LogisticRegression('l1', dual = False, multi_class='ovr')
-    logisticRegLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
-    print "logisticReg on windows is done!"
+    for name, predictor in predictors.items():
+        results[name] = tuneAndTrain(predictor, data, lables, NUMBER_OF_FOLDS)
+        print "{} on windows is done!".format(name)
 
-    predictor = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    randomForestLinePerFiveMinutesResults = predictByFeatures(predictor, selectedFeaturesData,linePerFiveMinutesLabels, False)
-    print "randomForest on windows is done!"
+    # print "writing results to file..."
+    # paths = [SVM_RES_WINDOWS_PATH,LOGISTIC_RES_WINDOWS_PATH,FOREST_RES_WINDOWS_PATH]
+    # for res, path in zip(results.values(), paths):
 
-
-    print "plotting..."
-    plot(svmLinePerFiveMinutesResults, SVM_RES_WINDOWS_PATH)
-    plot(logisticRegLinePerFiveMinutesResults, LOGISTIC_RES_WINDOWS_PATH)
-    plot(randomForestLinePerFiveMinutesResults, FOREST_RES_WINDOWS_PATH)
+    for name, res in results.items():
+        print "error on {} is: {}".format(name, res)
 
 def predict():
     try:
@@ -177,10 +192,10 @@ def predict():
         pass
 
     # predictOnEntire()
-    predictOnWindows()
+    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
+    linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
 
-
-
+    predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels)
 
 
     #plotData(linePerPatientData, labelsPerPatients)
