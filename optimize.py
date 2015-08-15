@@ -62,28 +62,20 @@ def plotGridSearch(grid, C_range, gamma_range, gridName = 'grid1'):
     plt.savefig(os.path.join(RESULTS_FOLDER,'{}.png'.format(gridName)))
     # plt.show()
 
-def gridSearch(X, y, c_low, c_high, gamma_low, gamma_high, base = 10):
+
+def gridSearch(X, y,pred, param_grid):
     '''
     :param base: what base to use with given exponents
     :return:
     '''
-    C_range = np.logspace(c_low, c_high, 10, base)
-    gamma_range = np.logspace(gamma_low, gamma_high, 10, base)
-
-    print 'searching grid (base {}):\nC: {}\ngamma: {}'.format(base, C_range, gamma_range)
-    param_grid = dict(gamma=gamma_range, C=C_range)
     cv = StratifiedShuffleSplit(y, n_iter=NUMBER_OF_FOLDS, test_size=1./NUMBER_OF_FOLDS, random_state=42)
-    grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv, scoring=lossScorer)
+    grid = GridSearchCV(pred, param_grid=param_grid, cv=cv, scoring=lossScorer)
     grid.fit(X, y)
-
-    print("The best parameters are %s with a score of %0.2f"
-          % (grid.best_params_, grid.best_score_))
-    plotGridSearch(grid, C_range, gamma_range)
-    return  grid
+    return grid
 
 
 
-def optimzeSVM(X, y, initial_low_C=-5, initial_high_C=10, initial_low_gamma=-10, initial_high_gamma=5):
+def DEPRICATED_optimzeSVM(X, y, c_low=-5, c_high=10, gamma_low=-10, gamma_high=5):
     '''
 
     :param X: data set to optimize on
@@ -91,36 +83,110 @@ def optimzeSVM(X, y, initial_low_C=-5, initial_high_C=10, initial_low_gamma=-10,
     :param initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma: inittial grid borders given as **exponents** for base 10
     :return: a predictor created using optimal parameters, and trained on input data
     '''
-    pred = gridSearch(X, y, initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma)
-    params = pred.get_params()
-    coarse_c = params['C']
-    coarse_gamma = params['gamma']
+    C_range = np.logspace(c_low, c_high, 10)
+    gamma_range = np.logspace(gamma_low, gamma_high, 10)
+    param_grid = dict(gamma=gamma_range, C=C_range)
 
+    print 'searching grid (base {}):\nC: {}\ngamma: {}'.format(10, C_range, gamma_range)
+    grid = gridSearch(X, y, param_grid)
+    pred = grid.estimator
+    bestParamsFromCoarseSearch = pred.get_params()
+    print bestParamsFromCoarseSearch
+    coarse_c = bestParamsFromCoarseSearch['C']
+    coarse_gamma = bestParamsFromCoarseSearch['gamma']
+
+    print("The best parameters (coarse) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+    plotGridSearch(grid, C_range, gamma_range)
+
+    #get base-2 exponents, and define new grid limits
     margin = 2
-
     c_exp_base2 = np.rint(np.log2(coarse_c))
-    print 'c_exp_base2: ', c_exp_base2
-    low_c_exp_base2 = c_exp_base2 - margin
-    high_c_exp_base2 = c_exp_base2 + margin
-
     gamma_exp_base2 = np.rint(np.log2(coarse_gamma))
+    print 'c_exp_base2: ', c_exp_base2
     print 'gamma_exp_base2: ', gamma_exp_base2
-    low_gamma_exp_base2 = gamma_exp_base2 - margin
-    high_gamma_exp_base2 = gamma_exp_base2 + margin
 
-    pred =  gridSearch(X, y, low_c_exp_base2, high_c_exp_base2, low_gamma_exp_base2, high_gamma_exp_base2, base = 2)
-    params = pred.get_params()
-    fine_c = params['C']
-    fine_gamma = params['gamma']
+    c_low = c_exp_base2 - margin
+    c_high = c_exp_base2 + margin
+    gamma_low = gamma_exp_base2 - margin
+    gamma_high = gamma_exp_base2 + margin
+
+    C_range = np.logspace(c_low, c_high, 10, base =2)
+    gamma_range = np.logspace(gamma_low, gamma_high, 10, base =2)
+    param_grid = dict(gamma=gamma_range, C=C_range)
+
+    print 'searching grid (base {}):\nC: {}\ngamma: {}'.format(10, C_range, gamma_range)
+    grid = gridSearch(X, y, param_grid)
+    pred = grid.estimator
+    bestParamsFromFineSearch = pred.get_params()
+    fine_c = bestParamsFromFineSearch['C']
+    fine_gamma = bestParamsFromFineSearch['gamma']
+
+    print("The best parameters (fine) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+    plotGridSearch(grid, C_range, gamma_range)
 
     return pred
 
-def optimzeRandomForest():
-    #TODO: implement
-    return
 
 def optimizeHyperParams(X, y, predictorType):
     if predictorType == 'SVM':
-        return  optimzeSVM(X,y)
+        paramDict = {'C':{'min': -5, 'max':10},\
+                     'gamma':{'min': -10, 'max':5}
+        }
+        pred = SVC()
+        return  genericOptimzer(X,y,pred, paramDict)
+
     if predictorType == 'RF':
-        return  optimzeRandomForest(X,y)
+        return
+
+
+def genericOptimzer(X, y, pred, paramDict):
+    '''
+
+    :param X: data
+    :param y: labels
+    :param paramDict: of structure:
+                                    pDict = {'param_1':{'min': -5, 'max':1 for param, borders in params.items0}
+                                             'param_2':{'min': -5, 'max':1 for param, borders in params.items0}
+                                             .
+                                             .
+                                             .
+                                    }
+    :return: trained and tuned estimator
+    '''
+    parameters = paramDict.keys()
+    param_grid = {param: np.logspace(borders['min'], borders['max']) for param, borders in paramDict.items()}
+
+    print 'searching grid (base {}):\nparams: {}'.format(10,paramDict)
+    grid = gridSearch(X, y, pred, param_grid)
+    pred = grid.best_estimator_
+    bestParamsFromCoarseSearch = pred.get_params()
+
+    coarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+    print 'coarseParams:', coarseParams
+    print("The best parameters (coarse) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+    # plotGridSearch(grid, C_range, gamma_range) #todo fixme
+
+    #get base-2 exponents, and define new grid limits
+    margin = 2
+    exponentsInBase2 = {param: np.rint(np.log2(value)) for param, value in coarseParams.items() }
+
+    newParamDict = {'param':\
+                        {'min': coarseExponent - margin ,\
+                         'max': coarseExponent + margin\
+                            }
+                    for param, coarseExponent in exponentsInBase2.items()}
+
+    newParam_grid = {param: np.logspace(borders['min'], borders['max']) for param, borders in newParamDict.items()}
+    print 'searching grid (base {}):\nparams: {}'.format(2, paramDict)
+    grid = gridSearch(X, y, pred, newParam_grid)
+    pred = grid.best_estimator_
+    bestParamsFromFineSearch = pred.get_params()
+    fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+    print("The best parameters (fine) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+    # plotGridSearch(grid, C_range, gamma_range)
+
+    return pred

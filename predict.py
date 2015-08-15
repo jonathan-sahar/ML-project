@@ -150,7 +150,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedFeatures = SelectFeatures(trainData, trainlabels)
         selectedFeaturesTrainData = [trainData[f] for f in selectedFeatures]
         selectedFeaturesTestData = [testData[f] for f in selectedFeatures]
-        predictor = optimizeHyperParams(predictorType, selectedFeaturesTrainData)
+        predictor = optimizeHyperParams(selectedFeaturesTrainData, predictorType)
 
         #Training
         predictor.fit(selectedFeaturesTrainData, trainlabels)
