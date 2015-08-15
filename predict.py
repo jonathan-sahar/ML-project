@@ -4,13 +4,11 @@ from random import shuffle
 
 from utils.constants import *
 from utils.utils import *
-
-#from sklearn import svm #TODO other learners as well
-import sklearn.svm
+from optimize import optimizeHyperParams
+import sklearn.svm #TODO other learners as well
 import sklearn.ensemble
 import sklearn.linear_model
 from FeatureSelection import SelectFeatures
-from sklearn.preprocessing import StandardScaler
 from sklearn.cross_validation import LeavePLabelOut
 
 '''
@@ -101,8 +99,6 @@ def crossValidate(predictor, data, labels, lossFunction, numFolds):
         errors.append(lossFunction(predictor, testData , testLabels))
     return errors
 
-
-
 def predictOnEntire():
     # learning on "Entire"
     #==============================================================================================
@@ -132,9 +128,13 @@ def predictOnEntire():
     plot(logisticRegLinePerPatientResults, LOGISTIC_RES_ENTIRE_PATH)
     plot(randomForestLinePerPatientResults, FOREST_RES_ENTIRE_PATH)
 
+def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction = lossFunction):
+    '''
 
-
-def tuneAndTrain(predictor, data, labels, numFolds, patientIds, lossFunction = lossFunction):
+    :param predictorType: one of: {'SVM', 'RF'}
+    :param patientIds: May be ints, strings, etc. denoting which patient every line is taken from.
+    :return: the mean error of an optimized predictor of type predictorType, and the optimized, trained predictor.
+    '''
     folds = LeavePLabelOut(patientIds, p=2)
     errors = []
 
@@ -150,16 +150,16 @@ def tuneAndTrain(predictor, data, labels, numFolds, patientIds, lossFunction = l
         selectedFeatures = SelectFeatures(trainData, trainlabels)
         selectedFeaturesTrainData = [trainData[f] for f in selectedFeatures]
         selectedFeaturesTestData = [testData[f] for f in selectedFeatures]
-        predictor = optimizeHyperParams(predictor, selectedFeaturesTrainData) #todo maybe add a string to desribe the predictor
+        predictor = optimizeHyperParams(predictorType, selectedFeaturesTrainData)
 
         #Training
         predictor.fit(selectedFeaturesTrainData, trainlabels)
 
         #Testing
-        errors.append(lossFunction(predictor, selectedFeaturesTestData, testLabels))
+        errors.append(lossFunction(predictorType, selectedFeaturesTestData, testLabels))
     return np.array(errors).mean()
 
-def predictOnWindows(data, lables):
+def predictOnWindows(data, lables, names):
     # learning on data divided into time windows
     #==============================================================================================
 
@@ -167,23 +167,23 @@ def predictOnWindows(data, lables):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictors = {}
+    predictors = ['SVM'] #TODO: add the rest
     results = {}
 
-    predictors['SVM'] = sklearn.svm.SVC()
-    predictors['logisticReg'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['SVM'] = sklearn.svm.SVC()
+    # predictors['logisticReg'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
 
-    for name, predictor in predictors.items():
-        results[name] = tuneAndTrain(predictor, data, lables, NUMBER_OF_FOLDS)
-        print "{} on windows is done!".format(name)
+    for predictor in predictors:
+        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+        print "{} on windows is done!".format(predictor)
 
     # print "writing results to file..."
     # paths = [SVM_RES_WINDOWS_PATH,LOGISTIC_RES_WINDOWS_PATH,FOREST_RES_WINDOWS_PATH]
     # for res, path in zip(results.values(), paths):
 
-    for name, res in results.items():
-        print "error on {} is: {}".format(name, res)
+    for type, res in results.items():
+        print "error on {} is: {}".format(type, res)
 
 def predict():
     try:
@@ -194,8 +194,9 @@ def predict():
     # predictOnEntire()
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    linePerFiveMinutesNames = readFileToFloat(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH, names = None)
 
-    predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels)
+    predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
 
 
     #plotData(linePerPatientData, labelsPerPatients)
