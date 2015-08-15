@@ -79,7 +79,7 @@ def gridSearch(X, y, c_low, c_high, gamma_low, gamma_high, base = 10):
     print("The best parameters are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
     plotGridSearch(grid, C_range, gamma_range)
-    return  grid.best_params_
+    return  grid
 
 
 
@@ -89,9 +89,10 @@ def optimzeSVM(X, y, initial_low_C=-5, initial_high_C=10, initial_low_gamma=-10,
     :param X: data set to optimize on
     :param y: corresponding labels
     :param initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma: inittial grid borders given as **exponents** for base 10
-    :return: a predictor created using optimal parameters
+    :return: a predictor created using optimal parameters, and trained on input data
     '''
-    params = gridSearch(X, y, initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma)
+    pred = gridSearch(X, y, initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma)
+    params = pred.get_params()
     coarse_c = params['C']
     coarse_gamma = params['gamma']
 
@@ -107,11 +108,12 @@ def optimzeSVM(X, y, initial_low_C=-5, initial_high_C=10, initial_low_gamma=-10,
     low_gamma_exp_base2 = gamma_exp_base2 - margin
     high_gamma_exp_base2 = gamma_exp_base2 + margin
 
-    params =  gridSearch(X, y, low_c_exp_base2, high_c_exp_base2, low_gamma_exp_base2, high_gamma_exp_base2, base = 2)
+    pred =  gridSearch(X, y, low_c_exp_base2, high_c_exp_base2, low_gamma_exp_base2, high_gamma_exp_base2, base = 2)
+    params = pred.get_params()
     fine_c = params['C']
     fine_gamma = params['gamma']
 
-    return SVC(fine_c, 'rbf', gamma=fine_gamma)
+    return pred
 
 def optimzeRandomForest():
     #TODO: implement
