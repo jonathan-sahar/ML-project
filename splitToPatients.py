@@ -18,7 +18,7 @@ def splitToPatients(outputDir = UNIFIED_TABLES_FOLDER):
         patientFilePath = os.path.join(outputDir, "DATAFILE_" + patient + ".csv")
         patientFile = open(patientFilePath, 'w')
         for line in allLines:
-            if line[49] == patient: #TODO magic number :(
+            if line[NUM_OF_BASIC_FEATURES-1] == patient:
                 patientLines.append(line)
         writer = csv.writer(patientFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
         writer.writerows(patientLines)

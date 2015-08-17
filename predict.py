@@ -10,6 +10,7 @@ import sklearn.ensemble
 import sklearn.linear_model
 from FeatureSelection import SelectFeatures
 from sklearn.cross_validation import LeavePLabelOut
+from sklearn import grid_search
 
 '''
 for all patients,
@@ -150,10 +151,10 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedFeatures = SelectFeatures(trainData, trainlabels)
         selectedFeaturesTrainData = [trainData[f] for f in selectedFeatures]
         selectedFeaturesTestData = [testData[f] for f in selectedFeatures]
-        predictor = optimizeHyperParams(selectedFeaturesTrainData, predictorType)
+        predictor = optimizeHyperParams(selectedFeaturesTrainData, trainlabels, predictorType) #todo maybe add a string to desribe the predictor
 
         #Training
-        predictor.fit(selectedFeaturesTrainData, trainlabels)
+        #predictor.fit(selectedFeaturesTrainData, trainlabels)
 
         #Testing
         errors.append(lossFunction(predictorType, selectedFeaturesTestData, testLabels))
@@ -167,12 +168,14 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictors = ['SVM'] #TODO: add the rest
+    predictors = ['SVM', 'RF'] #TODO: add the rest
     results = {}
 
-    # predictors['SVM'] = sklearn.svm.SVC()
-    # predictors['logisticReg'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    # predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(75) #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    #TODO Jonathan commented out
+    #predictors['SVM'] = sklearn.svm.SVC()
+    #predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+    #predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
 
     for predictor in predictors:
         results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
@@ -200,6 +203,7 @@ def predict():
 
 
     #plotData(linePerPatientData, labelsPerPatients)
+
 
 if __name__=='__main__':
     predict()

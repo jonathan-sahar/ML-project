@@ -85,7 +85,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     aggregatedLabels = []
     aggregatedPatientNames= []
     #create 5 sec per line table, per person
-    for patient in PATIENTS: # TODO: change back to PATIENTS!
+    for patient in PATIENTS:
         #read patient data, separate between actual features and labels
         print "Generating features for ", patient
         patientData = readFileToFloat(os.path.join(outputDir, "DATAFILE_" + patient + ".csv"))
@@ -123,6 +123,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         subWindows = divideToWindows(aggregatedSubWindows[patient], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
 
         aggregatedWindows[patient] = (createTimeWindowTable(aggregatorsListLong, 'long', dataWindows, subWindows))
+        aggregatedLabels.extend(len(aggregatedWindows[patient]) * [float(patient in SICK_PATIENTS)])
 
         #create labels
         num_windows = len(aggregatedWindows[patient])

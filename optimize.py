@@ -7,7 +7,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import  make_scorer
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-
+from sklearn.ensemble import RandomForestClassifier
 
 from utils.constants import *
 
@@ -128,6 +128,28 @@ def DEPRICATED_optimzeSVM(X, y, c_low=-5, c_high=10, gamma_low=-10, gamma_high=5
 
     return pred
 
+def NotInUse_optimzeRandomForest(data, labels):
+    '''
+    param data: data set to optimize on
+    param labels: corresponding labels
+    param initial_low_C, initial_high_C, initial_low_gamma, initial_high_gamma: inittial grid borders given as **exponents** for base 10
+    return: a predictor created using optimal parameters
+    '''
+    estimator = RandomForestClassifier()
+    param_grid = {
+              "n_estimators": [10,20,30,40,50,60,70,80,90,100],
+              "max_depth": [3, None],
+              "max_features": [1, 3, 10],
+              "min_samples_split": [1, 3, 10],
+              "min_samples_leaf": [1, 3, 10],
+              "bootstrap": [True, False],
+              "criterion": ["gini", "entropy"]}
+
+    clf = GridSearchCV(estimator, param_grid)
+    #start = time()
+    clf.fit(data, labels)
+    return clf
+
 
 def optimizeHyperParams(X, y, predictorType):
     if predictorType == 'SVM':
@@ -138,7 +160,14 @@ def optimizeHyperParams(X, y, predictorType):
         return  genericOptimzer(X,y,pred, paramDict)
 
     if predictorType == 'RF':
-        return
+        pred = RandomForestClassifier()
+        paramDict = {
+              'n_estimators': {'min': 40, 'max': 650},\
+              'max_features': {'min': 1, 'max': 20}}
+              #"max_depth": [3, None],
+              #"bootstrap": [True, False],
+              #"criterion": ["gini", "entropy"]}
+        return genericOptimzer(X,y,pred, paramDict)
 
 
 def genericOptimzer(X, y, pred, paramDict):
