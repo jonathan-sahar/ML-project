@@ -1,13 +1,13 @@
 __author__ = 'Jonathan'
-from DataArrange import arrangeData
-from createFeatureCSVs import createFeatures
+
+from dataManipulation.DataArrange import arrangeData
+from dataManipulation.createFeatureCSVs import createFeatures
 from utils.constants import *
-from splitToPatients import splitToPatients
-from predict import predict
+from dataManipulation.splitToPatients import splitToPatients
+from optimizationAndPrediction.predict import predict
 from utils.utils import *
 from scale import scaleData
-from visualization import visualFeatures
-
+from optimizationAndPrediction.visualization import visualFeatures
 
 # orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data - orig'
 # testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
@@ -24,25 +24,29 @@ testing_data_folder = 'C:\ML\parkinson\FIRSTDATA'
 
 print "here we go!"
 
-restore_data(orig_data_folder, testing_data_folder)
-print "data restored from orig!"
+# restore_data(orig_data_folder, testing_data_folder)
+# print "data restored from orig!"
 
-arrangeData()
-print "data arranged!"
+# print "arranging data..."
+# arrangeData()
+# print "data arranged!"
 
-splitToPatients()
-print "data split into patient files!"
+# print "splitting data into patient files..."
+# splitToPatients()
+# print "data split! done"
 
+print "creating features..."
 createFeatures()
 print "features created!"
 
-scaleData()
-print "data scaled!"
+# print "scaling data..."
+# scaleData()
+# print "data scaled!"
 
-predict()
-print "predictors where tested!"
-
-visualFeatures()
-print "top features visualized!"
+# predict()
+# print "predictors where tested!"
+#
+# visualFeatures()
+# print "top features visualized!"
 
 print "all done!"

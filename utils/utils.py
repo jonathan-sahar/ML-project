@@ -3,9 +3,8 @@ from collections import Counter
 import logging
 import re
 import csv
-import os
 import numpy as np
-
+from constants import *
 
 def print_doubled_fields(names):
     l = [item for item, count in Counter(names).items() if count > 1]
@@ -65,3 +64,21 @@ def filter_fields_by_name(names, regex, inverse = False):
     if inverse: mask = ~mask
     indices = np.where(mask)[0]
     return np.array(names)[indices]
+
+def getRandomSample(percent):
+    '''
+
+    :param percent:  ratio of original data to return 1%, 10% etc
+    :return:
+    '''
+    X = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
+    y = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    patientNames = np.array(readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)[0])
+
+    idxs = np.random.randint(len(X), size = percent * len(X) / 100)
+    X = X[idxs]
+    y = y[idxs]
+    patientNames = patientNames[idxs]
+
+    return (X, y, patientNames)
+    # return (X, y)

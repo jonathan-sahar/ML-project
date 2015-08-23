@@ -1,6 +1,5 @@
 __author__ = 'Inspiron'
 import numpy.lib.recfunctions as nprf
-
 from featureCalculationFunctions import *
 from utils.utils import *
 
@@ -117,7 +116,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #create 5 min per line table
     assert len(PATIENTS) == len(dataMatrix), "len(PATIENTS)({}) != len(dataMatrix)({}) !: " \
         .format(len(PATIENTS), len(dataMatrix))
-    for patient, patientData in dataMatrix.items():
+    for  patient, patientData in dataMatrix.items():
         longAggregatedFile = open(os.path.join(outputDir, "LONGFILE_" + patient + ".csv"), 'w')
         dataWindows = divideToWindows(patientData, LONG_TIME_WINDOW)
         subWindows = divideToWindows(aggregatedSubWindows[patient], LONG_TIME_WINDOW/SHORT_TIME_WINDOW)
@@ -155,6 +154,9 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
         writer.writerow(aggregatedPatientNames)
 
     #create patient per line table
+    print "skipping creating ENTIRE features!"
+    return
+
     aggregatedEntires = dict()
     for patient, patientData in dataMatrix.items():
         entireAggregatedFile = open(os.path.join(outputDir, "ENTIREFILE_" + patient + ".csv"), 'w')

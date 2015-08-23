@@ -129,15 +129,15 @@ def waveletCompressForAllColoumns(timeWindow, shortTimeWindows = None, windowTyp
     # mask[sorted_indices] = True
 
 stat_func_pointers = [
-                     (stats.tmax, 'max'),
-                     (stats.tmin,'min' ),
+                     # (stats.tmax, 'max'),
+                     # (stats.tmin,'min' ),
                      (stats.tmean,'mean'),
                      (stats.tstd, 'std'),
                      (stats.skew, 'skew'),
-                     (stats.kurtosis, 'kurtosis'),
+                     # (stats.kurtosis, 'kurtosis'),
                      (np.nanmedian, 'median'),
                      (_mode, 'mode'),
-                     (_per_window_mean_TKEO, 'mean_TKEO'),
+                     # (_per_window_mean_TKEO, 'mean_TKEO'),
                      (_zero_crossing_rate, 'zero_crossings')
                      ] #TODO add more functions
 
@@ -161,11 +161,12 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
         row = np.hstack((row, v))
 
     #adding cross features std
-    r = re.compile(r'(.*STD.*)')
-    STDFields = filter_fields_by_name(names,r)
-    columns = [c for c in columns if c in STDFields]
-    row = np.hstack((row, columns.mean()))
-    #Doing something else
+    # r = re.compile(r'(.*STD.*)')
+    # STDFields = filter_fields_by_name(names,r)
+    # columns = [np.array(c) for c in columns if c in STDFields]
+    # columns = np.array(columns)
+    # row = np.hstack((row, columns.mean()))
+    # #Doing something else
     row = np.array(row)
 
     return fieldNames, row

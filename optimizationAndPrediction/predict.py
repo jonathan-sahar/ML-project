@@ -131,33 +131,44 @@ def predictOnEntire():
 
 def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction = lossFunction):
     '''
-
+    :param data: data matrix, a structured array.
     :param predictorType: one of: {'SVM', 'RF'}
     :param patientIds: May be ints, strings, etc. denoting which patient every line is taken from.
     :return: the mean error of an optimized predictor of type predictorType, and the optimized, trained predictor.
     '''
-    folds = LeavePLabelOut(patientIds, p=2)
+    folds = LeavePLabelOut(patientIds, p=2) #
     errors = []
 
     for trainIndices, testIndices in folds:
-        if np.all(trainlabels == trainlabels[0]): #can't train on elements that are all from the same group
-            continue
-
         #Tuning
-        trainData = [data[i] for i in trainIndices]
-        trainlabels = [labels[i] for i in trainIndices]
-        testData = [data[i] for i in testIndices]
-        testLabels = [labels[i] for i in testIndices]
-        selectedFeatures = SelectFeatures(trainData, trainlabels)
-        selectedFeaturesTrainData = [trainData[f] for f in selectedFeatures]
-        selectedFeaturesTestData = [testData[f] for f in selectedFeatures]
-        predictor = optimizeHyperParams(selectedFeaturesTrainData, trainlabels, predictorType) #todo maybe add a string to desribe the predictor
+        #get actual data and labels for current fold
+        trainData = data[trainIndices]
+        trainlabels = labels[trainIndices]
+        testData = data[testIndices]
+        testLabels = labels[testIndices]
+        if np.all(trainlabels == trainlabels[0]):
+            continue #can't train on elements that are all from the same group
+
+        # todo: for testing clustering: un-comment
+        # selectedFeatures = SelectFeatures(trainData, trainlabels)
+        # selectedTrainData = [trainData[f] for f in selectedFeatures]
+        # selectedTestData = [testData[f] for f in selectedFeatures]
+
+        # todo: for testing clustering
+        selectedTrainData = trainData
+        selectedTestData = testData
+
+        # todo: added! need to commit!
+        selectedTrainData = [list(tup) for tup in selectedTrainData]
+        selectedTestData = [list(tup) for tup in selectedTestData]
+
+        predictor = optimizeHyperParams(selectedTrainData, trainlabels, predictorType) #todo maybe add a string to desribe the predictor
 
         #Training
         #predictor.fit(selectedFeaturesTrainData, trainlabels)
 
         #Testing
-        errors.append(lossFunction(predictorType, selectedFeaturesTestData, testLabels))
+        errors.append(lossFunction(predictor, selectedTestData, testLabels))
     return np.array(errors).mean()
 
 def predictOnWindows(data, lables, names):

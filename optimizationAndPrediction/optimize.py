@@ -62,7 +62,6 @@ def plotGridSearch(grid, C_range, gamma_range, gridName = 'grid1'):
     plt.savefig(os.path.join(RESULTS_FOLDER,'{}.png'.format(gridName)))
     # plt.show()
 
-
 def gridSearch(X, y,pred, param_grid):
     '''
     :param base: what base to use with given exponents
@@ -128,7 +127,7 @@ def DEPRICATED_optimzeSVM(X, y, c_low=-5, c_high=10, gamma_low=-10, gamma_high=5
 
     return pred
 
-def NotInUse_optimzeRandomForest(data, labels):
+def DEPRICATED_optimzeRandomForest(data, labels):
     '''
     param data: data set to optimize on
     param labels: corresponding labels
@@ -152,9 +151,19 @@ def NotInUse_optimzeRandomForest(data, labels):
 
 
 def optimizeHyperParams(X, y, predictorType):
+    '''
+
+    :param X: list of lists, same as predictor.fit() expects to get.
+    :param y:
+    :param predictorType:
+    :return:
+    '''
     if predictorType == 'SVM':
-        paramDict = {'C':{'min': -5, 'max':10},\
-                     'gamma':{'min': -10, 'max':5}
+        # paramDict = {'C':{'min': -5, 'max':10},\
+        #              'gamma':{'min': -10, 'max':5}
+        # }
+        paramDict = {'C':{'min': -1, 'max':1},\
+                     'gamma':{'min': -1, 'max':1}
         }
         pred = SVC()
         return  genericOptimzer(X,y,pred, paramDict)
@@ -202,7 +211,7 @@ def genericOptimzer(X, y, pred, paramDict):
     margin = 2
     exponentsInBase2 = {param: np.rint(np.log2(value)) for param, value in coarseParams.items() }
 
-    newParamDict = {'param':\
+    newParamDict = {param:\
                         {'min': coarseExponent - margin ,\
                          'max': coarseExponent + margin\
                             }
@@ -217,5 +226,4 @@ def genericOptimzer(X, y, pred, paramDict):
     print("The best parameters (fine) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
     # plotGridSearch(grid, C_range, gamma_range)
-
     return pred

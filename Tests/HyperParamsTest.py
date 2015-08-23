@@ -9,8 +9,6 @@ from sklearn.ensemble import *
 import FeatureSelection
 import createFeatureCSVs
 
-
-
 def tuneAndTrain(estimatorType, data, labels, numFolds, patientIds, roundNum, estimator, lossFunction = predict.lossFunction):
     folds = LeavePLabelOut(patientIds, p=2)
     errors = []
