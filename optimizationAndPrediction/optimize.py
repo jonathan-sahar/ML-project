@@ -7,6 +7,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import  make_scorer
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+from matplotlib import ticker
 from sklearn.ensemble import RandomForestClassifier
 
 from utils.constants import *
@@ -29,6 +30,10 @@ class MidpointNormalize(Normalize):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
 
+
+runtime = {}
+runtime['plot_num'] = 1
+
 def plotGridSearch(grid, C_range, gamma_range, gridName = 'grid1'):
     '''
     Draws heatmap of the validation accuracy as a function of gamma and C
@@ -41,23 +46,42 @@ def plotGridSearch(grid, C_range, gamma_range, gridName = 'grid1'):
     the same color.
     '''
 
+    # get the scores for all (c, gamma) pairs in a 2D grid.
     scores = [x[1] for x in grid.grid_scores_]
-    scores = np.array(scores).reshape(len(C_range), len(gamma_range))
-    print "scores: ", scores
+    scores = np.array(scores).reshape(len(gamma_range), len(C_range))
 
+    # create the figure object, add a plotting area and adjust its size and locaation
+    fig = plt.figure(figsize=(16, 12))
+    ax = fig.add_subplot(111)
+    plt.subplots_adjust(left=0.1, right=0.95, bottom=0.2, top=0.95)
 
-    plt.figure(figsize=(8, 6))
-    plt.subplots_adjust(left=.2, right=0.95, bottom=0.15, top=0.95)
+    # set a formatter to display all values as exponents - **currently doesn't work for some reason**
+    formatter = ticker.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((0,0))
 
+    # get the mean of the top-5 pairs, for normalizing the colorbar
     top_values_mean = np.sort(scores)[:5].mean()
-    print "top_values_mean: ", top_values_mean
-    plt.imshow(scores, interpolation='nearest', cmap=plt.cm.hot,
+    # print "top_values_mean: ", top_values_mean
+
+    # draw the image in the axes (ax) object + the colorbar
+    cax = ax.imshow(scores, interpolation='nearest', cmap=plt.cm.hot,
                norm=MidpointNormalize(vmin=0.2, midpoint=top_values_mean))
-    plt.xlabel('gamma')
-    plt.ylabel('C')
-    plt.colorbar()
-    plt.xticks(np.arange(len(gamma_range)), gamma_range, rotation=45)
-    plt.yticks(np.arange(len(C_range)), C_range)
+    cbar = fig.colorbar(cax)
+
+    ax.invert_yaxis()
+    ax.xaxis.set_major_formatter(formatter)
+    ax.yaxis.set_major_formatter(formatter)
+
+    # set all the labels, titles, etc.
+    ax.set_ylabel('C', alpha=0.6, fontsize=20)
+    ax.set_yticks(np.arange(len(C_range)))
+    ax.set_yticklabels(C_range, rotation=45)
+
+    ax.set_xlabel('gamma', alpha=0.6, fontsize=20)
+    ax.set_xticks(np.arange(len(gamma_range)))
+    ax.set_xticklabels(gamma_range, rotation=45)
+
     plt.title('Hyperparameter scores')
     plt.savefig(os.path.join(RESULTS_FOLDER,'{}.png'.format(gridName)))
     # plt.show()
@@ -71,6 +95,96 @@ def gridSearch(X, y,pred, param_grid):
     grid = GridSearchCV(pred, param_grid=param_grid, cv=cv, scoring=lossScorer)
     grid.fit(X, y)
     return grid
+
+
+def genericOptimzer(X, y, pred, paramDict):
+    '''
+
+    :param X: data
+    :param y: labels
+    :param paramDict: of structure:
+                                    pDict = {'param_1':{'min': -5, 'max':1 for param, borders in params.items0}
+                                             'param_2':{'min': -5, 'max':1 for param, borders in params.items0}
+                                             .
+                                             .
+                                             .
+                                    }
+    :return: trained and tuned estimator
+    '''
+    plot_num = runtime['plot_num']
+    parameters = paramDict.keys()
+    param_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in paramDict.items()}
+
+    print 'searching grid (coarse):\nparams: {}'.format(paramDict)
+    grid = gridSearch(X, y, pred, param_grid)
+    pred = grid.best_estimator_
+    bestParamsFromCoarseSearch = pred.get_params()
+
+    bestCoarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+    print("The best parameters (coarse) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+
+    C_range = param_grid['C']
+    gamma_range = param_grid['gamma']
+    plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
+
+    #get base-2 exponents, and define new grid limits
+    margin = 1
+    exponents = {param: np.floor(np.log10(value)) for param, value in bestCoarseParams.items() }
+
+    newParamDict = {param: \
+                        {'min': coarseExponent, \
+                         'max': coarseExponent + margin \
+                            }
+                    for param, coarseExponent in exponents.items()}
+
+    newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in newParamDict.items()}
+    print newParam_grid
+    print 'searching grid (fine):' \
+          'params: {}'.format(newParamDict)
+    grid = gridSearch(X, y, pred, newParam_grid)
+    pred = grid.best_estimator_
+    bestParamsFromFineSearch = pred.get_params()
+    fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+    print("The best parameters (fine) are %s with a score of %0.2f"
+          % (grid.best_params_, grid.best_score_))
+
+    C_range = newParam_grid['C']
+    gamma_range = newParam_grid['gamma']
+    plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
+    runtime['plot_num'] += 1
+
+    return pred
+
+
+def optimizeHyperParams(X, y, predictorType):
+    '''
+
+    :param X: list of lists, same as predictor.fit() expects to get.
+    :param y:
+    :param predictorType:
+    :return:
+    '''
+    if predictorType == 'SVM':
+        # paramDict = {'C':{'min': -5, 'max':10},\
+        #              'gamma':{'min': -10, 'max':5}
+        # }
+        paramDict = {'C':{'min': -3, 'max':5},\
+                     'gamma':{'min': -5, 'max':3}
+        }
+        pred = SVC()
+        return  genericOptimzer(X,y,pred, paramDict)
+
+    if predictorType == 'RF':
+        pred = RandomForestClassifier()
+        paramDict = {
+              'n_estimators': {'min': 40, 'max': 650},\
+              'max_features': {'min': 1, 'max': 20}}
+              #"max_depth": [3, None],
+              #"bootstrap": [True, False],
+              #"criterion": ["gini", "entropy"]}
+        return genericOptimzer(X,y,pred, paramDict)
+
 
 
 
@@ -149,37 +263,7 @@ def DEPRICATED_optimzeRandomForest(data, labels):
     clf.fit(data, labels)
     return clf
 
-
-def optimizeHyperParams(X, y, predictorType):
-    '''
-
-    :param X: list of lists, same as predictor.fit() expects to get.
-    :param y:
-    :param predictorType:
-    :return:
-    '''
-    if predictorType == 'SVM':
-        # paramDict = {'C':{'min': -5, 'max':10},\
-        #              'gamma':{'min': -10, 'max':5}
-        # }
-        paramDict = {'C':{'min': -1, 'max':1},\
-                     'gamma':{'min': -1, 'max':1}
-        }
-        pred = SVC()
-        return  genericOptimzer(X,y,pred, paramDict)
-
-    if predictorType == 'RF':
-        pred = RandomForestClassifier()
-        paramDict = {
-              'n_estimators': {'min': 40, 'max': 650},\
-              'max_features': {'min': 1, 'max': 20}}
-              #"max_depth": [3, None],
-              #"bootstrap": [True, False],
-              #"criterion": ["gini", "entropy"]}
-        return genericOptimzer(X,y,pred, paramDict)
-
-
-def genericOptimzer(X, y, pred, paramDict):
+def DEPRICATED_genericOptimzer(X, y, pred, paramDict):
     '''
 
     :param X: data
@@ -194,7 +278,7 @@ def genericOptimzer(X, y, pred, paramDict):
     :return: trained and tuned estimator
     '''
     parameters = paramDict.keys()
-    param_grid = {param: np.logspace(borders['min'], borders['max']) for param, borders in paramDict.items()}
+    param_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in paramDict.items()}
 
     print 'searching grid (base {}):\nparams: {}'.format(10,paramDict)
     grid = gridSearch(X, y, pred, param_grid)
@@ -202,10 +286,12 @@ def genericOptimzer(X, y, pred, paramDict):
     bestParamsFromCoarseSearch = pred.get_params()
 
     coarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
-    print 'coarseParams:', coarseParams
     print("The best parameters (coarse) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
-    # plotGridSearch(grid, C_range, gamma_range) #todo fixme
+
+    C_range = param_grid['C']
+    gamma_range = param_grid['gamma']
+    plotGridSearch(grid, C_range, gamma_range, 'coarse_grid')
 
     #get base-2 exponents, and define new grid limits
     margin = 2
@@ -217,13 +303,17 @@ def genericOptimzer(X, y, pred, paramDict):
                             }
                     for param, coarseExponent in exponentsInBase2.items()}
 
-    newParam_grid = {param: np.logspace(borders['min'], borders['max']) for param, borders in newParamDict.items()}
-    print 'searching grid (base {}):\nparams: {}'.format(2, paramDict)
+    newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in newParamDict.items()}
+    print 'searching grid (base {}):\nparams: {}'.format(2, newParamDict)
     grid = gridSearch(X, y, pred, newParam_grid)
     pred = grid.best_estimator_
     bestParamsFromFineSearch = pred.get_params()
     fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
     print("The best parameters (fine) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
-    # plotGridSearch(grid, C_range, gamma_range)
+
+    C_range = param_grid['C']
+    gamma_range = param_grid['gamma']
+    plotGridSearch(grid, C_range, gamma_range, 'fine_grid')
     return pred
+

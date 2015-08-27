@@ -74,6 +74,8 @@ def getRandomSample(percent):
     X = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     y = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
     patientNames = np.array(readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)[0])
+    if percent == 100:
+        return (X, y, patientNames)
 
     idxs = np.random.randint(len(X), size = percent * len(X) / 100)
     X = X[idxs]

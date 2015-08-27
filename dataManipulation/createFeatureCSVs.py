@@ -155,6 +155,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
 
     #create patient per line table
     print "skipping creating ENTIRE features!"
+    print "returning..."
     return
 
     aggregatedEntires = dict()

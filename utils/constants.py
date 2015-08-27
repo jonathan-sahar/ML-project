@@ -63,7 +63,7 @@ FEATURE_SELECTION_LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "sele
 
 NUMBER_OF_ENTIRE_FEATURES = 40 #TODO not correct
 NUMBER_OF_FIVE_MINUTES_FEATURES = 40 #TODO not correct
-NUMBER_OF_FOLDS = 8 #16 choose 2
+NUMBER_OF_FOLDS = 8
 
 
 entireFeatures = []
@@ -95,6 +95,9 @@ selectedFeaturesT = ['x_max_deviation_DCT_coeff_2', 'MFCC_6_DCT_coeff_3', 'y_PSD
 selectedFeaturesAgg1 = ['MFCC_12_max', 'z_PSD_10_max', 'y_PSD_3_max', \
                         'z_PSD_6_max','PSD_500_max', 'PSD_250_max', 'MFCC_9_max', 'MFCC_10_max']
 
+
+GRIDSEARCH_RESOLUTION = 10 # number of values to check per parameter
+GRIDSEARCH_FOLDS = 4 # number of folds to base the gridSearch score on
 
 # FOR TESTING PURPOSES
 

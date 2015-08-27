@@ -55,7 +55,6 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
 
     return listOfLossValuesPerFeature
 
-
 def  plot(errorFeatureTupleDict, resultPath):
     sortedErrors = sorted(errorFeatureTupleDict.items(), key= lambda tup: tup[1])
     # sorted(errorFeatureTupleList, lambda x: x[1])
@@ -149,12 +148,10 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         if np.all(trainlabels == trainlabels[0]):
             continue #can't train on elements that are all from the same group
 
-        # todo: for testing clustering: un-comment
+        # todo: for testing - skip feature selection
         # selectedFeatures = SelectFeatures(trainData, trainlabels)
         # selectedTrainData = [trainData[f] for f in selectedFeatures]
         # selectedTestData = [testData[f] for f in selectedFeatures]
-
-        # todo: for testing clustering
         selectedTrainData = trainData
         selectedTestData = testData
 
@@ -162,7 +159,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTrainData = [list(tup) for tup in selectedTrainData]
         selectedTestData = [list(tup) for tup in selectedTestData]
 
-        predictor = optimizeHyperParams(selectedTrainData, trainlabels, predictorType) #todo maybe add a string to desribe the predictor
+        predictor = optimizeHyperParams(selectedTrainData, trainlabels, predictorType)
 
         #Training
         #predictor.fit(selectedFeaturesTrainData, trainlabels)
