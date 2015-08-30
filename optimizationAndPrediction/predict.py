@@ -136,20 +136,21 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
     :return: the mean error of an optimized predictor of type predictorType, and the optimized, trained predictor.
     '''
     folds = LeavePLabelOut(patientIds, p=2) #
+    folds = [tup for tup in folds]
     errors = []
 
-    for trainIndices, testIndices in folds:
+    for trainIndices, testIndices in folds[:numFolds]:
         #Tuning
         #get actual data and labels for current fold
         trainData = data[trainIndices]
-        trainlabels = labels[trainIndices]
+        trainLabels = labels[trainIndices]
         testData = data[testIndices]
         testLabels = labels[testIndices]
-        if np.all(trainlabels == trainlabels[0]):
+        if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
         # todo: for testing - skip feature selection
-        # selectedFeatures = SelectFeatures(trainData, trainlabels)
+        # selectedFeatures = SelectFeatures(trainData, trainLabels)
         # selectedTrainData = [trainData[f] for f in selectedFeatures]
         # selectedTestData = [testData[f] for f in selectedFeatures]
         selectedTrainData = trainData
@@ -159,10 +160,10 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTrainData = [list(tup) for tup in selectedTrainData]
         selectedTestData = [list(tup) for tup in selectedTestData]
 
-        predictor = optimizeHyperParams(selectedTrainData, trainlabels, predictorType)
+        predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
         #Training
-        #predictor.fit(selectedFeaturesTrainData, trainlabels)
+        #predictor.fit(selectedFeaturesTrainData, trainLabels)
 
         #Testing
         errors.append(lossFunction(predictor, selectedTestData, testLabels))
