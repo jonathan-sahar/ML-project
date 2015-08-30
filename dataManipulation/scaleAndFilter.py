@@ -5,12 +5,13 @@ import numpy as np
 
 STDEV_THRESHOLD_UPPER = 0.5
 STDEV_THRESHOLD_LOWER = 0.05
-def filterLinesOnRegex(X, y, r = re.compile(r'([xyz]+_standard_deviation_mean)')):
+def filterLinesOnRegex(X, y, n, r = re.compile(r'([xyz]+_standard_deviation_mean)')):
     '''
     Removes time windows where the variance of the accelerometer/compass/whatever is too high
     currently looks at accelerometer std
     :param X: structured array
     :param y: labels
+    :param n: names
     :return:
     '''
     scaler = StandardScaler()
@@ -29,7 +30,7 @@ def filterLinesOnRegex(X, y, r = re.compile(r'([xyz]+_standard_deviation_mean)')
     #indices are the indices (=line numbers) where mask is True
 
     indices = np.where(mask)
-    return X[indices], y[indices]
+    return X[indices], y[indices], n[indices]
 
 
 
