@@ -156,7 +156,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTrainData = trainData
         selectedTestData = testData
 
-        # todo: added! need to commit!
+        # to get the data in a list-of-list format that optimizeHyperParams expects.
         selectedTrainData = [list(tup) for tup in selectedTrainData]
         selectedTestData = [list(tup) for tup in selectedTestData]
 

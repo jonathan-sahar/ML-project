@@ -33,7 +33,7 @@ def tuneAndTrainForClustering(predictorType, data, labels, patientIds, numFolds,
         if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
-        # todo: for testing clustering: un-comment
+        # todo: for testing - skip feature selection
         # selectedFeatures = SelectFeatures(trainData, trainLabels)
         # selectedTrainData = [trainData[f] for f in selectedFeatures]
         # selectedTestData = [testData[f] for f in selectedFeatures]
@@ -42,7 +42,7 @@ def tuneAndTrainForClustering(predictorType, data, labels, patientIds, numFolds,
         selectedTrainData, trainLabels, scaler, km = createClusterFeatures(trainData, trainLabels, trainNames)
         selectedTestData, testlabels, _s, _K = createClusterFeatures(testData, testLabels, testNames, scaler = scaler, km=km)
 
-        # todo: added! need to commit!
+        # to get the data in a list-of-list format that optimizeHyperParams expects.
         selectedTrainData = [list(tup) for tup in selectedTrainData]
         selectedTestData = [list(tup) for tup in selectedTestData]
 
@@ -57,12 +57,14 @@ def tuneAndTrainForClustering(predictorType, data, labels, patientIds, numFolds,
 
 def createClusterFeatures(X, y, patientNames, scaler = None, km=None):
     '''
-    :param X:
-    :param y:
-    :param patientNames:
-    :param scaler:
-    :param km:
-    :return: a structured array
+
+    :param X: data
+    :param y: labels
+    :param patientNames: names
+    :param scaler: standartScaler object fitted on other data - to be used when creating features for test data
+    :param km: KMeans object fitted on other data - to be used when creating features for test data
+    :return: a structured array, a line per every patient, with features being the number of windows taken from that patient that belong to every cluster.
+             (every cluster is a separate feature)
     '''
     X = castStructuredArrayToRegular(X)
     if km != None:
@@ -110,7 +112,7 @@ def createClusterFeatures(X, y, patientNames, scaler = None, km=None):
 
     return  newData, newLabels, scaler, km
 
-
+# Testing
 X, y, patientNames = getRandomSample(30)
 res = tuneAndTrainForClustering('SVM', X, y, patientNames, NUMBER_OF_FOLDS)
 print "average success rate : ", res
