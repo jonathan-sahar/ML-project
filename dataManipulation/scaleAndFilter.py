@@ -1,3 +1,4 @@
+ __author__ = 'Jonathan'
 from sklearn.preprocessing import StandardScaler
 from utils.utils import filter_fields_by_name, castStructuredArrayToRegular
 import re

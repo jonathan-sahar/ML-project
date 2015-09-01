@@ -26,14 +26,13 @@ LONG_TABLE_PREFIX = 'LONGFILE'
 ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
 #Jonathan
-ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_and_results'
+#ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
 
 #Tomer
 # ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
-# ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
-
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
 
 UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')

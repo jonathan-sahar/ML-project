@@ -25,7 +25,7 @@ def lossFunction(estimator, X, y):
         if estimator.predict(data)[0] != label:
             loss += 1
     loss = loss / len(X)
-    return loss
+    return 1-loss
 
 def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
     listOfLossValuesPerFeature = dict()
@@ -54,6 +54,7 @@ def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEnt
         print listOfLossValuesPerFeature['transform_features']
 
     return listOfLossValuesPerFeature
+
 
 def  plot(errorFeatureTupleDict, resultPath):
     sortedErrors = sorted(errorFeatureTupleDict.items(), key= lambda tup: tup[1])
@@ -206,7 +207,7 @@ def predict():
     # predictOnEntire()
     linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
-    linePerFiveMinutesNames = readFileToFloat(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH, names = None)
+    linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
 
     predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
 

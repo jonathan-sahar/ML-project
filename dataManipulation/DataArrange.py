@@ -5,7 +5,7 @@ from datetime import datetime
 
 from utils.constants import *
 from utils.utils import *
-
+#from geopy.distance import *
 
 def deleteInvalidData(dirname, filenames):
     global subFolderCounter
@@ -13,12 +13,18 @@ def deleteInvalidData(dirname, filenames):
     #both initiated to True in case they are not found in the folder at all
     isValidAcclTable = True
     isValidAudioTable = True
+    isValidCmpssTable = True
+    isExistGPSTable = False
     accelLineCounter = 0
     audioLineCounter = 0
+    cmpssLineCounter = 0
     #accelStartTime = None
     #audioStartTime = None
     accelLines = []
     audioLines = []
+    cmpssLines = []
+    gpsLines = []
+    gpsFileName = None
 
     for fileName in filenames:
         #going on all files in current folder
@@ -26,65 +32,89 @@ def deleteInvalidData(dirname, filenames):
         fileIntro, fileExtension = os.path.splitext(filePath)
         if fileName[0:9] == 'hdl_accel' and fileExtension == '.csv':
             (accelLines, isValidAcclTable, accelLineCounter, acclHeader) = validTable(26, filePath)
-            #making sure there are not remain rows for aggregation
-            #del accelLines[-((accelLineCounter % LONG_TIME_WINDOW)-1):]
 
         if fileName[0:9] == 'hdl_audio' and fileExtension == '.csv':
             (audioLines, isValidAudioTable, audioLineCounter, audioHeader) = validTable(20, filePath)
-            #making sure there are not remain rows for aggregation
-            #del audioLines[-((audioLineCounter % LONG_TIME_WINDOW)-1):]
 
-    tablesContainGaps = not (isValidAcclTable and isValidAudioTable)
-    (accelLines,audioLines) = makeSameStartTime(accelLines,audioLines)
-    (accelLines,audioLines) = makeSameLength(accelLines,audioLines)
-    if isValidAcclTable and isValidAudioTable:
-        logger.debug("data length - after: {}, {}".format(len(accelLines), len(audioLines)))
+        if fileName[0:9] == 'hdl_cmpss' and fileExtension == '.csv':
+            (cmpssLines, isValidCmpssTable, cmpssLineCounter, cmpssHeader) = validTable(13, filePath)
 
-    if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True):
+        if fileName[0:7] == 'hdl_gps' and fileExtension == '.csv':
+            isExistGPSTable = True
+            #TODO not disqualafy for GPS defected line, but just read the file
+            (gpsLines, isValidGpsTable, gpsLineCounter, gpsHeader) = validTable(13, filePath)
+
+    tablesContainGaps = not (isValidAcclTable and isValidAudioTable and isValidCmpssTable)
+    (accelLines, audioLines, cmpssLines) = makeSameStartTime(accelLines,audioLines, cmpssLines) #TODO can add also GPS
+    (accelLines, audioLines, cmpssLines, gpsLines) = makeSameLength(accelLines,audioLines, cmpssLines, gpsLines)
+
+    #if isValidAcclTable and isValidAudioTable:
+    #    logger.debug("data length - after: {}, {}".format(len(accelLines), len(audioLines)))
+
+    if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True) or (isExistGPSTable == False):
         if (delete == True) and (subfolderCounter>0):
             shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
     else:
-        headers = acclHeader[0] + audioHeader[0]
+        #addPrefixToFeatures(acclHeader , audioHeader, cmpssHeader)
+        headers = acclHeader[0] + audioHeader[0] + cmpssHeader[0] + gpsHeader[0]
         _headers = [h.replace('.', '_') for h in headers]
-        data = mergeLists(accelLines, audioLines)
+        data = mergeLists(accelLines, audioLines, cmpssLines, gpsLines)
         lines = [_headers] + data
 
         return (lines, accelLineCounter, 0)
 
-def makeSameLength(accelLines,audioLines):
-    newLength = min(len(accelLines),len(audioLines))
+#def addPrefixToFeatures(acclHeader , audioHeader, cmpssHeader):
+ #   for name in acclHeader[0]:
+ #       name = "accel_"+name
+ #   return
+
+def makeSameLength(accelLines, audioLines, cmpssLines):
+    newLength = min(len(accelLines),len(audioLines), len(cmpssLines))
     newLength = newLength - newLength%LONG_TIME_WINDOW
     accelLines = accelLines[0:newLength]
     audioLines = audioLines[0:newLength]
-    return (accelLines, audioLines)
+    cmpssLines = cmpssLines[0:newLength]
+    return (accelLines, audioLines, cmpssLines)
 
-def makeSameStartTime(accelLines,audioLines):
-    if len(accelLines) < 4 or len(audioLines) < 4:
-        return ([],[])
+def makeSameStartTime(accelLines,audioLines, cmpssLines):
+    if len(accelLines) < 4 or len(audioLines) < 4 or len(cmpssLines) < 4:
+        return ([],[], [])
     accelLine = accelLines[1]
     audioLine = audioLines[1]
+    cmpssLine = cmpssLines[1]
     acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
     audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
-    while acceldateObj > audiodateObj:
-        if len(audioLines) < 4:
-            break
-        audioLines = [audioLines[0]]+audioLines[2:]
-        audioLine = audioLines[1]
-        audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
-    while audiodateObj > acceldateObj:
-        if len(audioLines) < 4:
-            break
-        accelLines = [accelLines[0]]+accelLines[2:]
-        accelLine = accelLines[1]
-        acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
-    return (accelLines,audioLines)
+    cmpssdateObj = datetime.strftime(cmpssLine[13][0:19], '%Y-%m-%d %H:%M:%S')
 
-def mergeLists(leftList, rightList):
+    #making sure audio doesn't start before accel
+    (audioLines, audiodateObj) = alignLeftToRight(acceldateObj, audioLines, audiodateObj)
+    #making sure cmpss dosn't start before audio (and accel)
+    (cmpssLines, cmpssdateObj) = alignLeftToRight(audiodateObj, cmpssLines, cmpssdateObj)
+    #making sure accel doesn't start before cmpss
+    (accelLines, acceldateObj) = alignLeftToRight(cmpssdateObj, accelLines, acceldateObj)
+    #making sure audio doesn't start before modified accel
+    (audioLines, audiodateObj) = alignLeftToRight(acceldateObj, audioLines, audiodateObj)
+
+    return (accelLines,audioLines,cmpssLines)
+
+#making sure the right list doesn't start before the left obj
+def alignLeftToRight(leftdateObj, rightList, rightdateObj):
+    while leftdateObj > rightdateObj:
+        if len(rightList) < 4:
+            break
+        rightList = [rightList[0]]+rightList[2:]
+        rightFirstLine = rightList[1]
+        rightdateObj = datetime.strptime(rightFirstLine[20][0:19], '%Y-%m-%d %H:%M:%S')
+    return (rightList, rightdateObj)
+
+
+def mergeLists(leftList, centerList, rightList):
     all_lines = []
     rightListIter = iter(rightList)
+    centerListIter = iter(centerList)
     for line in leftList:
-        all_lines.append((line+rightListIter.next()))
+        all_lines.append((line+centerListIter.next()+rightListIter.next()))
     return all_lines
 
 def addLabels(dirname, filenames):

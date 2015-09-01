@@ -3,18 +3,20 @@ __author__ = 'Inspiron'
 from utils.constants import *
 from utils.utils import *
 import sklearn
-import predict
+from optimizationAndPrediction.predict import *
 from sklearn.cross_validation import LeavePLabelOut
 from sklearn.ensemble import *
-import FeatureSelection
-import createFeatureCSVs
+import optimizationAndPrediction.FeatureSelection
+import dataManipulation.createFeatureCSVs
+from sklearn.svm import SVC
 
-def tuneAndTrain(estimatorType, data, labels, numFolds, patientIds, roundNum, estimator, lossFunction = predict.lossFunction):
-    folds = LeavePLabelOut(patientIds, p=2)
+def tuneAndTrainTest(estimatorType, data, labels, numFolds, patientIds, roundNum, estimator, lossFunction = lossFunction):
+
+    folds = LeavePLabelOut(patientIds[0], p=2)
     errors = []
+
+    counter = 0
     for trainIndices, testIndices in folds:
-        #if np.all(trainlabels == trainlabels[0]): #can't train on elements that are all from the same group
-        #    continue
 
         #Tuning
         trainData = [data[i] for i in trainIndices]
@@ -26,7 +28,7 @@ def tuneAndTrain(estimatorType, data, labels, numFolds, patientIds, roundNum, es
         if roundNum == 0:
             estimator.fit(trainData, trainlabels)
         else:
-            estimator = predict.optimizeRandomForestHyperParameters(estimatorType, trainData, trainlabels)
+            estimator = optimizeHyperParams(trainData, trainlabels, estimatorType)
 
         #Testing
         errors.append(lossFunction(estimator, testData, testLabels))
@@ -36,13 +38,15 @@ def tuneAndTrain(estimatorType, data, labels, numFolds, patientIds, roundNum, es
 if __name__ == "__main__":
     selectedFeaturesTrainData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     trainlabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
-    patientIds = readFileToFloat(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH, names = None)
+    patientIds = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
 
-    estimatorsType = [("RF", RandomForestClassifier())]
+    #estimatorsType = [("RF", RandomForestClassifier())]
+    estimatorsType = [("SVM", SVC())]
+    trainData = castStructuredArrayToRegular(selectedFeaturesTrainData)
 
     for (estimatorType, estimator) in estimatorsType:
         print "the error on {} with-out tune is: ".format(estimatorsType)
-        tuneAndTrain(estimatorType, selectedFeaturesTrainData, trainlabels, 8, patientIds, 0, estimator)
+        tuneAndTrainTest(estimatorType, trainData, trainlabels, 8, patientIds, 0, estimator)
         print "the error on {} with tune is: ".format(estimatorsType)
-        tuneAndTrain(estimatorType, selectedFeaturesTrainData, trainlabels, 8, patientIds, 1, None)
+        tuneAndTrainTest(estimatorType, trainData, trainlabels, 8, patientIds, 1, None)
 

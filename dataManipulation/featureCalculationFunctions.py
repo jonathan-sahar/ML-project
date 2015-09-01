@@ -161,12 +161,11 @@ def statisticsForAllColoumns(timeWindow, shortTimeWindows = None, windowType = '
         row = np.hstack((row, v))
 
     #adding cross features std
-    # r = re.compile(r'(.*STD.*)')
-    # STDFields = filter_fields_by_name(names,r)
-    # columns = [np.array(c) for c in columns if c in STDFields]
-    # columns = np.array(columns)
-    # row = np.hstack((row, columns.mean()))
-    # #Doing something else
+    #r = re.compile(r'(.*STD.*)')
+    #STDFields = filter_fields_by_name(names,r)
+    #columns = [c for c in columns if c in STDFields]
+    #row = np.hstack((row, columns.mean()))
+    #Doing something else
     row = np.array(row)
 
     return fieldNames, row

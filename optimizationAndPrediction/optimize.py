@@ -250,7 +250,7 @@ def DEPRICATED_optimzeRandomForest(data, labels):
     '''
     estimator = RandomForestClassifier()
     param_grid = {
-              "n_estimators": [10,20,30,40,50,60,70,80,90,100],
+              "n_estimators": [10,50,100],
               "max_depth": [3, None],
               "max_features": [1, 3, 10],
               "min_samples_split": [1, 3, 10],
