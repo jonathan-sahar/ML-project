@@ -29,7 +29,7 @@ ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 #ROOT_DATA_FOLDER = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
 
 #Tomer
-# ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
+#ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
 ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')

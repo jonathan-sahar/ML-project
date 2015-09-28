@@ -37,12 +37,14 @@ def deleteInvalidData(dirname, filenames):
             (audioLines, isValidAudioTable, audioLineCounter, audioHeader) = validTable(20, filePath)
 
         if fileName[0:9] == 'hdl_cmpss' and fileExtension == '.csv':
-            (cmpssLines, isValidCmpssTable, cmpssLineCounter, cmpssHeader) = validTable(13, filePath)
+            (cmpssLines, isValidCmpssTable, cmpssLineCounter, cmpssHeader) = validTable(14, filePath)
 
         if fileName[0:7] == 'hdl_gps' and fileExtension == '.csv':
             isExistGPSTable = True
             #TODO not disqualafy for GPS defected line, but just read the file
-            (gpsLines, isValidGpsTable, gpsLineCounter, gpsHeader) = validTable(13, filePath)
+            lines = readFileAsIs(filePath)
+            gpsHeader = lines[0]
+            gpsLines = lines[1:]
 
     tablesContainGaps = not (isValidAcclTable and isValidAudioTable and isValidCmpssTable)
     (accelLines, audioLines, cmpssLines) = makeSameStartTime(accelLines,audioLines, cmpssLines) #TODO can add also GPS
@@ -51,13 +53,13 @@ def deleteInvalidData(dirname, filenames):
     #if isValidAcclTable and isValidAudioTable:
     #    logger.debug("data length - after: {}, {}".format(len(accelLines), len(audioLines)))
 
-    if (accelLineCounter <= LONG_TIME_WINDOW) or (tablesContainGaps == True) or (isExistGPSTable == False):
+    if (len(accelLines) <= LONG_TIME_WINDOW) or (tablesContainGaps == True) or (isExistGPSTable == False):
         if (delete == True) and (subfolderCounter>0):
             shutil.rmtree(dirname)
         return ([], 0, accelLineCounter)
     else:
         #addPrefixToFeatures(acclHeader , audioHeader, cmpssHeader)
-        headers = acclHeader[0] + audioHeader[0] + cmpssHeader[0] + gpsHeader[0]
+        headers = acclHeader[0] + audioHeader[0] + cmpssHeader[0] + gpsHeader
         _headers = [h.replace('.', '_') for h in headers]
         data = mergeLists(accelLines, audioLines, cmpssLines, gpsLines)
         lines = [_headers] + data
@@ -69,52 +71,53 @@ def deleteInvalidData(dirname, filenames):
  #       name = "accel_"+name
  #   return
 
-def makeSameLength(accelLines, audioLines, cmpssLines):
-    newLength = min(len(accelLines),len(audioLines), len(cmpssLines))
+def makeSameLength(accelLines, audioLines, cmpssLines, gpsLines):
+    newLength = min(len(accelLines),len(audioLines), len(cmpssLines), len(gpsLines))
     newLength = newLength - newLength%LONG_TIME_WINDOW
     accelLines = accelLines[0:newLength]
     audioLines = audioLines[0:newLength]
     cmpssLines = cmpssLines[0:newLength]
-    return (accelLines, audioLines, cmpssLines)
+    gpsLines = gpsLines[0:newLength]
+    return (accelLines, audioLines, cmpssLines, gpsLines)
 
 def makeSameStartTime(accelLines,audioLines, cmpssLines):
     if len(accelLines) < 4 or len(audioLines) < 4 or len(cmpssLines) < 4:
-        return ([],[], [])
+        return ([], [], [])
     accelLine = accelLines[1]
     audioLine = audioLines[1]
     cmpssLine = cmpssLines[1]
     acceldateObj = datetime.strptime(accelLine[26][0:19], '%Y-%m-%d %H:%M:%S')
     audiodateObj = datetime.strptime(audioLine[20][0:19], '%Y-%m-%d %H:%M:%S')
-    cmpssdateObj = datetime.strftime(cmpssLine[13][0:19], '%Y-%m-%d %H:%M:%S')
+    cmpssdateObj = datetime.strptime(cmpssLine[14][0:19], '%Y-%m-%d %H:%M:%S')
 
     #making sure audio doesn't start before accel
-    (audioLines, audiodateObj) = alignLeftToRight(acceldateObj, audioLines, audiodateObj)
+    (audioLines, audiodateObj) = alignRightToLeft(acceldateObj, audioLines, audiodateObj, 20)
     #making sure cmpss dosn't start before audio (and accel)
-    (cmpssLines, cmpssdateObj) = alignLeftToRight(audiodateObj, cmpssLines, cmpssdateObj)
+    (cmpssLines, cmpssdateObj) = alignRightToLeft(audiodateObj, cmpssLines, cmpssdateObj, 14)
     #making sure accel doesn't start before cmpss
-    (accelLines, acceldateObj) = alignLeftToRight(cmpssdateObj, accelLines, acceldateObj)
+    (accelLines, acceldateObj) = alignRightToLeft(cmpssdateObj, accelLines, acceldateObj, 26)
     #making sure audio doesn't start before modified accel
-    (audioLines, audiodateObj) = alignLeftToRight(acceldateObj, audioLines, audiodateObj)
+    (audioLines, audiodateObj) = alignRightToLeft(acceldateObj, audioLines, audiodateObj, 20)
 
     return (accelLines,audioLines,cmpssLines)
 
 #making sure the right list doesn't start before the left obj
-def alignLeftToRight(leftdateObj, rightList, rightdateObj):
+def alignRightToLeft(leftdateObj, rightList, rightdateObj, rightDateColumn):
     while leftdateObj > rightdateObj:
         if len(rightList) < 4:
             break
         rightList = [rightList[0]]+rightList[2:]
         rightFirstLine = rightList[1]
-        rightdateObj = datetime.strptime(rightFirstLine[20][0:19], '%Y-%m-%d %H:%M:%S')
+        rightdateObj = datetime.strptime(rightFirstLine[rightDateColumn][0:19], '%Y-%m-%d %H:%M:%S')
     return (rightList, rightdateObj)
 
-
-def mergeLists(leftList, centerList, rightList):
+def mergeLists(firstList, secondList, thirdList, fourthList):
     all_lines = []
-    rightListIter = iter(rightList)
-    centerListIter = iter(centerList)
-    for line in leftList:
-        all_lines.append((line+centerListIter.next()+rightListIter.next()))
+    secondListIter = iter(secondList)
+    thirdListIter = iter(thirdList)
+    fourthListIter = iter(fourthList)
+    for line in firstList:
+        all_lines.append((line+secondListIter.next()+ thirdListIter.next()+ fourthListIter.next()))
     return all_lines
 
 def addLabels(dirname, filenames):
@@ -148,18 +151,19 @@ def addLabels(dirname, filenames):
             writer.writerows(lines)
 
 def validTable(dateColumn, filePath):
+    #print filePath
     #TODO: add the first row (fields) if it's the first call to validate
     valid = True
     fileHandle = open(filePath, 'r')
     reader = csv.reader(fileHandle)
     header = [reader.next()]
-
+    #print header
     lines = []
     lineCounter = 1
 
     for line in reader:
         try:
-            dateObj = datetime.strptime(line[dateColumn], '%Y-%m-%d %H:%M:%S')
+            dateObj = datetime.strptime(line[dateColumn][0:19], '%Y-%m-%d %H:%M:%S')
         except ValueError:
             continue
         if lineCounter == 1:
@@ -167,7 +171,7 @@ def validTable(dateColumn, filePath):
         if lineCounter == 2:
             twoLastTime = lastTime
             lastTime = dateObj
-        if (dateObj - lastTime).seconds > 2 and (dateObj - twoLastTime).seconds > 2:
+        if (dateObj - lastTime).seconds > 100 and (dateObj - twoLastTime).seconds > 100:
             valid = False
         twoLastTime = lastTime
         lastTime = dateObj

@@ -2,63 +2,85 @@ __author__ = 'Inspiron'
 
 
 import csv
-from utils.constants import *
 import utm
 import numpy as np
+from utils.utils import *
+from utils.constants import *
+from dataManipulation.createFeatureCSVs import divideToWindows
 
 def maxSpeed(gpsLocations):
     fastest = 0 #Meters per sec
     counter = 1
-    (prevEasting,prevNorthing, prevZoneNumber, prevZoneLetter) = utm.from_latlon(gpsLocations[0])
-
-    for gpsLocation in gpsLocations:
-        #ten lines are approx 10 secs
-        if counter < 10:
+    totalTime = 0
+    for (timediff, lat, long) in gpsLocations:
+        #
+        if counter == 1:
+            (prevEasting,prevNorthing) = (lat, long)
+        #
+        if counter == 10:
             counter = counter+1
+            totalTime = totalTime+timediff
             continue
-
-        (easting, northing, zoneNumber, zoneLetter) = utm.from_latlon(gpsLocation)
-        distance = np.sqrt((easting-prevEasting)^2 + (northing-prevNorthing)^2)
-        speed = distance/10
-        if speed > fastest:
-            fastest = speed
-        (prevEasting,prevNorthing) = (easting, northing)
-        counter = 1
+        if counter == 10:
+            totalTime = totalTime+timediff
+            (easting, northing, zoneNumber, zoneLetter) = utm.from_latlon(lat, long)
+            distance = np.sqrt((easting-prevEasting)^2 + (northing-prevNorthing)^2)
+            speed = distance/totalTime #Meters per sec
+            counter = 1
+            if speed > fastest:
+                fastest = speed
+            #for debug only
+            if speed > 0:
+                print "non zero speed "
+                print speed
+            #end debug only
     return fastest
 
 
-def findGPSNoise(gpsFileName, isExistGPSTable):
-    gpsLocations = []#read GPSTable
-    fastest = maxSpeed(gpsLocations)
-    if fastest > 3: #Meters per sec:
-        return True
-    return False
+def deleteGPSNoise(patientLines):
+    print "in deleteGPSNoise"
+    cleanPatientLines = []
+    locations = []
+    windowNumberDbg = 0
+    timeWindows = divideToWindows(patientLines, LONG_TIME_WINDOW) #TODO save a side the header
+    for timeWindow in timeWindows:
+        windowNumberDbg = windowNumberDbg+1 #for debug
+        for line in timeWindow:
+            #print line
+            locations.append((line[60], line[61], line[62])) #change to relevant format (timediff, lat, long)
+        fastest = maxSpeed(locations)
+        #for debug only
+        if fastest >= 9:
+            print "the fastest movement "
+            print fastest
+            print "in window number "
+            print windowNumberDbg
+        #end of debug only
+        if fastest < 9: #Meters per sec
+            cleanPatientLines = cleanPatientLines + timeWindow
+    return cleanPatientLines
+
 
 
 def cleanNoise(outputDir = UNIFIED_TABLES_FOLDER):
-    allLines = []
-    dataFilePath = os.path.join(outputDir, "unified_table.csv")
-    dataFile = open(dataFilePath, 'r')
-    reader = csv.reader(dataFile)
-    headers = reader.next()
-
-    print "make sure these are headers: "
-    print headers
-
-    for row in reader:
-        allLines.append(row)
-
     for patient in PATIENTS:
-        patientLines = [headers]
         patientFilePath = os.path.join(outputDir, "DATAFILE_" + patient + ".csv")
+        #patientLines = readFileAsIs(patientFilePath)
+
+        patientData = readFileToFloat(patientFilePath)
+        header = np.array(patientData.dtype.names).tolist()
+        #patientLines = castStructuredArrayToRegular(patientData)
+        #patientLines = patientLines.tolist() #cast to list of list
+
+        patientLines = deleteGPSNoise(patientLines)
+        #print len(header)
+        #print len(patientLines)
+        #print len(patientLines[0])
+        patientLines = header.append(patientLines)
         patientFile = open(patientFilePath, 'w')
-        for line in allLines:
-            if line[NUM_OF_BASIC_FEATURES-1] == patient:
-                patientLines.append(line)
         writer = csv.writer(patientFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
         writer.writerows(patientLines)
         patientFile.close()
-    dataFile.close()
 
 if __name__ == "__main__":
     cleanNoise()
