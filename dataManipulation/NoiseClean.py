@@ -66,17 +66,20 @@ def cleanNoise(outputDir = UNIFIED_TABLES_FOLDER):
     for patient in PATIENTS:
         patientFilePath = os.path.join(outputDir, "DATAFILE_" + patient + ".csv")
         #patientLines = readFileAsIs(patientFilePath)
+        #header = patientLines[0]
 
         patientData = readFileToFloat(patientFilePath)
         header = np.array(patientData.dtype.names).tolist()
-        #patientLines = castStructuredArrayToRegular(patientData)
-        #patientLines = patientLines.tolist() #cast to list of list
+        patientLines = castStructuredArrayToRegular(patientData)
+        patientLines = patientLines.tolist() #cast to list of list
 
         patientLines = deleteGPSNoise(patientLines)
+
         #print len(header)
         #print len(patientLines)
         #print len(patientLines[0])
-        patientLines = header.append(patientLines)
+
+        patientLines = [header] + patientLines
         patientFile = open(patientFilePath, 'w')
         writer = csv.writer(patientFile, lineterminator='\n') #TODO why would dataTable have \n in the end (also other places)
         writer.writerows(patientLines)
