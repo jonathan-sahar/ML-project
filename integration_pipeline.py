@@ -41,17 +41,17 @@ print "data split done!"
 #cleanNoise()
 #print "data cleaned of noise done!"
 
-#print "creating features..."
-#createFeatures()
-#print "features created done!"
+print "creating features..."
+createFeatures()
+print "features created done!"
 
 # print "scaling data..."
 # scaleData()
 # print "data scaled done!"
 
-# print "creating and testing predictors..."
-# predict()
-# print "predictors where tested done!"
+print "creating and testing predictors..."
+predict()
+print "predictors where tested done!"
 
 # print "visualizing features results..."
 # visualFeatures()

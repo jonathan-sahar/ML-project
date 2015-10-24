@@ -7,7 +7,7 @@ from utils.constants import *
 from utils.utils import *
 #from geopy.distance import *
 
-def deleteInvalidData(dirname, filenames):
+def deleteInvalidData(dirname, filenames, includeHeaders):
     global subFolderCounter
     delete = False
     #both initiated to True in case they are not found in the folder at all
@@ -62,7 +62,10 @@ def deleteInvalidData(dirname, filenames):
         headers = acclHeader[0] + audioHeader[0] + cmpssHeader[0] + gpsHeader
         _headers = [h.replace('.', '_') for h in headers]
         data = mergeLists(accelLines, audioLines, cmpssLines, gpsLines)
-        lines = [_headers] + data
+        if includeHeaders == True:
+            lines = [_headers] + data
+        else:
+            lines = data
 
         return (lines, accelLineCounter, 0)
 
@@ -142,8 +145,9 @@ def addLabels(dirname, filenames):
             reader = csv.reader(input_file)
             # headers = reader.next()
             lines += ([row for row in reader])
-            lines[0].extend(['Is sick','Patient'])
-            [line.extend([str(sick), subject_name]) for line in lines[1:]]
+            if lines[0][-1] != 'Patient':
+                lines[0].extend(['Is sick','Patient'])
+                [line.extend([str(sick), subject_name]) for line in lines[1:]]
 
 
         with open(filePath, 'w') as out_file:
@@ -210,16 +214,19 @@ def arrangeData(rootDir = ROOT_DATA_FOLDER, outputDir = UNIFIED_TABLES_FOLDER):
     global subfolderCounter
     subfolderCounter = 0 # TODO: eliminate need for global
     dataTable = []
-
+    includeHeaders = True
     for dirname, dirnames, filenames in os.walk(rootDir):
         if subfolderCounter == 0:
             #don't want to delete root
-            subfolderCounter+=1
+            subfolderCounter = subfolderCounter+1
             continue
         #adding labels
         addLabels(dirname, filenames)
         #delete unwanted parts (bad table, and modulu of tables)
-        (table ,goodPart, badPart) = deleteInvalidData(dirname, filenames)
+        (table ,goodPart, badPart) = deleteInvalidData(dirname, filenames, includeHeaders)
+        if len(table) > 0:
+            includeHeaders = False
+
         goodRecordings += goodPart
         badRecordings += badPart
         dataTable += table

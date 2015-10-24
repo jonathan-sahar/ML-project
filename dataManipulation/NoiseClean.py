@@ -37,10 +37,15 @@ def maxSpeed(gpsLocations):
     return fastest
 
 
+def deviceLayed():
+    return
+
+
 def deleteGPSNoise(patientLines):
     print "in deleteGPSNoise"
     cleanPatientLines = []
     locations = []
+    deviceLayedIndicators = []
     windowNumberDbg = 0
     timeWindows = divideToWindows(patientLines, LONG_TIME_WINDOW) #TODO save a side the header
     for timeWindow in timeWindows:
@@ -49,6 +54,7 @@ def deleteGPSNoise(patientLines):
             #print line
             locations.append((line[60], line[61], line[62])) #change to relevant format (timediff, lat, long)
         fastest = maxSpeed(locations)
+        isLayed = deviceLayed()
         #for debug only
         if fastest >= 9:
             print "the fastest movement "
@@ -56,7 +62,7 @@ def deleteGPSNoise(patientLines):
             print "in window number "
             print windowNumberDbg
         #end of debug only
-        if fastest < 9: #Meters per sec
+        if (fastest < 9) or (isLayed == True): #9 Meters per sec
             cleanPatientLines = cleanPatientLines + timeWindow
     return cleanPatientLines
 

@@ -19,13 +19,37 @@ average of all lines per 5 min of patient - get one line per patient - should be
 lines per 5 min of data - predict by each feature, all the features.
 '''
 
-def lossFunction(estimator, X, y):
+def lossFunction(estimator, X, y, names):
     loss = 0.0
     for data,label in zip(X,y):
         if estimator.predict(data)[0] != label:
             loss += 1
     loss = loss / len(X)
     return 1-loss
+
+def twoStepsLoss(estimator, X, y, names):
+    print names
+    folds = LeavePLabelOut(names, p=1) #ugly patch - correct syntax?
+    folds = [tup for tup in folds]
+    loss = 0.0
+    for testIndices in folds[:2]:
+        print "in fold"
+        testData = X[testIndices]
+        testLabels = y[testIndices]
+        testLabel = (y[testIndices])[0]
+        sickCount = 0.0
+        for data in testData:
+            sickCount = sickCount + (estimator.predict(data)[0])
+        sickCount = sickCount / len(X)
+        if sickCount > 0.5: #mostly sick
+            if testLabel == 0:
+                loss = loss + 1
+        else:
+            if testLabel == 1:
+                loss = loss + 1
+    loss = 1 - (loss/2)
+    return loss
+
 
 def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
     listOfLossValuesPerFeature = dict()
@@ -147,6 +171,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         trainLabels = labels[trainIndices]
         testData = data[testIndices]
         testLabels = labels[testIndices]
+        testNames = patientIds[testIndices]
         if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
@@ -164,10 +189,11 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
         #Training
-        #predictor.fit(selectedFeaturesTrainData, trainLabels)
+        #predictor.fit(selectedFeaturesTrainData, trainLabels) //optimizeHyperParams also trains
 
         #Testing
-        errors.append(lossFunction(predictor, selectedTestData, testLabels))
+        errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames))
+
     return np.array(errors).mean()
 
 def predictOnWindows(data, lables, names):
@@ -187,9 +213,17 @@ def predictOnWindows(data, lables, names):
     #predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
     #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
 
+#regular prediction
+#    for predictor in predictors:
+#        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+#        print "{} on windows is done!".format(predictor)
+
+
+#This is 2 steps prediction - commitee - not parallel to regular prediction above
     for predictor in predictors:
-        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
         print "{} on windows is done!".format(predictor)
+
 
     # print "writing results to file..."
     # paths = [SVM_RES_WINDOWS_PATH,LOGISTIC_RES_WINDOWS_PATH,FOREST_RES_WINDOWS_PATH]

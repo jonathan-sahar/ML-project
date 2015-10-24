@@ -1,7 +1,6 @@
 __author__ = 'Inspiron'
 
 import csv
-
 from utils.constants import *
 
 
@@ -14,6 +13,7 @@ def splitToPatients(outputDir = UNIFIED_TABLES_FOLDER):
     for row in reader:
         allLines.append(row)
     for patient in PATIENTS:
+        print patient
         patientLines = [headers]
         patientFilePath = os.path.join(outputDir, "DATAFILE_" + patient + ".csv")
         patientFile = open(patientFilePath, 'w')
