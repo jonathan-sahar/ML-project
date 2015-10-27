@@ -207,7 +207,8 @@ def _validTable(removeMe, filePath):
 def arrangeData(rootDir = ROOT_DATA_FOLDER, outputDir = UNIFIED_TABLES_FOLDER):
     try:
         os.mkdir(outputDir)
-    except WindowsError:
+    #except WindowsError:
+    except OSError:
         pass
     goodRecordings = 0
     badRecordings = 0

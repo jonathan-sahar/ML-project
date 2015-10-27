@@ -8,6 +8,8 @@ from utils.utils import *
 from utils.constants import *
 from dataManipulation.createFeatureCSVs import divideToWindows
 
+
+import pdb
 def maxSpeed(gpsLocations):
     fastest = 0 #Meters per sec
     counter = 1
@@ -69,11 +71,14 @@ def deleteGPSNoise(patientLines):
 
 
 def cleanNoise(outputDir = UNIFIED_TABLES_FOLDER):
+
+
     for patient in PATIENTS:
+    #	pdb.set_trace()
         patientFilePath = os.path.join(outputDir, "DATAFILE_" + patient + ".csv")
         #patientLines = readFileAsIs(patientFilePath)
         #header = patientLines[0]
-
+	print("reading patient file for {}...".format(patient))
         patientData = readFileToFloat(patientFilePath)
         header = np.array(patientData.dtype.names).tolist()
         patientLines = castStructuredArrayToRegular(patientData)

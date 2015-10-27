@@ -114,6 +114,7 @@ def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
 
     logger.info("Wrote aggregatedSubWindows table to File")
     #create 5 min per line table
+    print "creating 5 min per line table"
     assert len(PATIENTS) == len(dataMatrix), "len(PATIENTS)({}) != len(dataMatrix)({}) !: " \
         .format(len(PATIENTS), len(dataMatrix))
     for  patient, patientData in dataMatrix.items():

@@ -10,8 +10,8 @@ from scale import scaleData
 from optimizationAndPrediction.visualization import visualFeatures
 from dataManipulation.NoiseClean import cleanNoise
 
-# orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data - orig'
-# testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\EXTRACTED MJFF Partial Data'
+# orig_data_folder = '/homes/jonathan.s/workspace/data/data_sample_orig'
+# testing_data_folder = '/homes/jonathan.s/workspace/data/data_sample'
 
 #orig_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample_orig'
 #testing_data_folder = 'D:\Documents\Technion - Bsc Computer Science\ML Project\data_sample'
@@ -29,21 +29,23 @@ print "here we go!"
 # restore_data(orig_data_folder, testing_data_folder)
 # print "data restored from orig!"
 
-print "arranging data..."
-arrangeData()
-print "data arranged done!"
-
-print "splitting data into patient files..."
-splitToPatients()
-print "data split done!"
+#print "arranging data..."
+#arrangeData()
+#print "data arranged done!"
+#
+#
+#print "splitting data into patient files..."
+#splitToPatients()
+#print "data split done!"
 
 #print "cleaning noise in data..."
 #cleanNoise()
 #print "data cleaned of noise done!"
+#
 
-print "creating features..."
-createFeatures()
-print "features created done!"
+#print "creating features..."
+#createFeatures()
+#print "features created done!"
 
 # print "scaling data..."
 # scaleData()

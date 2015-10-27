@@ -40,7 +40,7 @@ def readFileToFloat(filePath, dt = float, names = True):
     r = re.compile(r'(.*time.*|.*patient.*|.*sick.*)',re.IGNORECASE)
     vmatch = np.vectorize(lambda x:bool(r.match(x)))
     mask = ~vmatch(field_names) # mask is true where field name doesn't contain 'time' or 'patient'
-    return data[field_names[mask]]
+    return data[list(field_names[mask])]
 
 
 def readFileAsIs(filePath):

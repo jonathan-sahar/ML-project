@@ -160,6 +160,11 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
     :param patientIds: May be ints, strings, etc. denoting which patient every line is taken from.
     :return: the mean error of an optimized predictor of type predictorType, and the optimized, trained predictor.
     '''
+    
+    import pdb
+    pdb.set_trace()
+   
+    patientIds = np.array(patientIds[0])
     folds = LeavePLabelOut(patientIds, p=2) #
     folds = [tup for tup in folds]
     errors = []
@@ -204,23 +209,22 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictors = ['SVM', 'RF'] #TODO: add the rest
+    predictor_types = ['SVM', 'RF'] #TODO: add the rest
+    
     results = {}
+    predictors['SVM'] = sklearn.svm.SVC()
+    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+   # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+   # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
 
-    #TODO Jonathan commented out
-    #predictors['SVM'] = sklearn.svm.SVC()
-    #predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    #predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
-    #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-
-#regular prediction
-#    for predictor in predictors:
-#        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
-#        print "{} on windows is done!".format(predictor)
+    #regular prediction
+    #for predictor in predictors.keys():
+    #    results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+    #    print "{} on windows is done!".format(predictor)
 
 
-#This is 2 steps prediction - commitee - not parallel to regular prediction above
-    for predictor in predictors:
+    #This is 2 steps prediction - commitee - not parallel to regular prediction above
+    for predictor in predictors.keys():
         results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
         print "{} on windows is done!".format(predictor)
 
@@ -232,20 +236,41 @@ def predictOnWindows(data, lables, names):
     for type, res in results.items():
         print "error on {} is: {}".format(type, res)
 
+def predictOnFeatures(data, labels):
+    results = {}
+    predictors = dict()
+    predictors['SVM'] = sklearn.svm.SVC()
+    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+   # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+   # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+
+    #regular prediction
+    for predictor in predictors.keys():
+        results[predictor] = predictByFeatures(predictor, data, labels, isEntire=False)
+        print "{} on features is done!".format(predictor)
+    return results
+
+
+
 def predict():
     try:
         os.mkdir(RESULTS_FOLDER)
-    except WindowsError:
+    except OSError:
         pass
 
-    # predictOnEntire()
-    linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
-    linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
-    linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
+    # predicting on data divided into windows:
+    #-----------------------------------------
+    #linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
+    #linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    #linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
+    #predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
 
-    predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
-
-
+    # predicting on line-per-sample data:
+    #-----------------------------------------
+    data = readFileToFloat(DATA_TABLE_FILE_PATH)
+    labels = readFileToFloat(LABELS_FOR_DATA_TABLE_FILE_PATH , names = None)
+    results = predictOnFeatures(data, labels)
+    print results
     #plotData(linePerPatientData, labelsPerPatients)
 
 

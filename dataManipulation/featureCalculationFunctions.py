@@ -70,7 +70,7 @@ def numSamplesInFreqRange(window):
     r = re.compile(r'([a-z]_PSD_\d+\b)')
     freqFields = filter_fields_by_name(window.dtype.names, r)
     headers = getFieldNames(freqFields, ['is_in_freq_range '])
-    freqData = window[freqFields]
+    freqData = window[list(freqFields)]
     freqData = castStructuredArrayToRegular(freqData)
     means = freqData.mean(0)
     boolean_indicators = ((FREQ_L < means) & (means < FREQ_H))
@@ -135,7 +135,7 @@ stat_func_pointers = [
                      (stats.tstd, 'std'),
                      (stats.skew, 'skew'),
                      # (stats.kurtosis, 'kurtosis'),
-                     (np.nanmedian, 'median'),
+                     (np.median, 'median'),
                      (_mode, 'mode'),
                      # (_per_window_mean_TKEO, 'mean_TKEO'),
                      (_zero_crossing_rate, 'zero_crossings')

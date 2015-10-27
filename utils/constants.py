@@ -1,5 +1,3 @@
-from chaco.tests.serializable_base import Root
-
 __author__ = 'Jonathan'
 import  os
 LONG_TIME_WINDOW = 300
@@ -30,10 +28,23 @@ ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 
 #Tomer
 #ROOT_DATA_FOLDER = 'C:\ML\parkinson\DATA'
-ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+#ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+
+#Server
+# ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/data_sample'
+ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/1_feature_by_feature/'
+# ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/2_time_windows_and_stat_features/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/3_feature_selection/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/4_scaling/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/5_dimentionality_reduction_features/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/6_variance_across_features/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/7_cleanNoise/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/8_committee/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/9_clustering/'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
+LABELS_FOR_DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_labels.csv')
 
 UNIFIED_ENTIRE_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_entire.csv')
 UNIFIED_AGGREGATED_DATA_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_aggregated_subWindows.csv')
