@@ -12,7 +12,7 @@ PATIENTS = SICK_PATIENTS+CONTROL
 
 PATIENTS_test = PATIENTS # TODO: for testing!
 
-# ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
+# ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA
 # UNIFIED_TABLES_FOLDER = 'C:\ML\parkinson\FIRSTDATA\Unified Tables'
 # DATA_TABLE_FILE_PATH = 'C:\ML\parkinson\Unified Tables\DATAFile.csv'
 # SHORT_TABLE_FILE_PATH = 'C:\ML\parkinson\FIRSTDATA\Unified Tables\SHORTFile.csv'
@@ -31,8 +31,8 @@ ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 #ROOT_DATA_FOLDER = 'C:\ML\parkinson\FIRSTDATA'
 
 #Server
-# ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/data_sample'
-ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/1_feature_by_feature/'
+ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/data_sample'
+# ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/1_feature_by_feature/'
 # ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/2_time_windows_and_stat_features/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/3_feature_selection/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/4_scaling/'
@@ -43,6 +43,11 @@ ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/1_featur
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/9_clustering/'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
+
+#comment below for configuration_runs/1_feature_by_feature
+# DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_table.csv')
+
+#uncomment below for configuration_runs/1_feature_by_feature
 DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_data.csv')
 LABELS_FOR_DATA_TABLE_FILE_PATH = os.path.join(UNIFIED_TABLES_FOLDER, 'unified_labels.csv')
 
@@ -67,6 +72,7 @@ LOGISTIC_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "logistic_res_instance_p
 LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "logistic_res_instance_per_aggregated_window.csv")
 FOREST_RES_ENTIRE_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_entire_data.csv")
 FOREST_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "randForest_res_instance_per_aggregated_window.csv")
+UNIFIED_RESULTS_PATH = os.path.join(RESULTS_FOLDER, "unified_prediction_results.csv")
 
 FEATURE_SELECTION_LOGISTIC_RES_WINDOWS_PATH = os.path.join(RESULTS_FOLDER, "selected_features.csv")
 

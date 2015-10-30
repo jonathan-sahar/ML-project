@@ -11,6 +11,9 @@ import sklearn.linear_model
 from FeatureSelection import SelectFeatures
 from sklearn.cross_validation import LeavePLabelOut
 from sklearn import grid_search
+import dumper
+import csv
+import pdb
 
 '''
 for all patients,
@@ -19,9 +22,15 @@ average of all lines per 5 min of patient - get one line per patient - should be
 lines per 5 min of data - predict by each feature, all the features.
 '''
 
-def lossFunction(estimator, X, y, names):
+def lossFunction(estimator, X, y, names=None):
+    pdb.set_trace()
     loss = 0.0
     for data,label in zip(X,y):
+        #print "lossFunction: ",estimator
+        #print "lossFunction: ", data
+        #print "lossFunction: ", labels
+        #print "lossFunction: ",estimator.predict(data)[0][0]
+        #weird patch, suddenly getting weired arrays for data and label... 30.10.15, 08:15, jonathan
         if estimator.predict(data)[0] != label:
             loss += 1
     loss = loss / len(X)
@@ -161,8 +170,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
     :return: the mean error of an optimized predictor of type predictorType, and the optimized, trained predictor.
     '''
     
-    import pdb
-    pdb.set_trace()
+    # pdb.set_trace()
    
     patientIds = np.array(patientIds[0])
     folds = LeavePLabelOut(patientIds, p=2) #
@@ -212,22 +220,22 @@ def predictOnWindows(data, lables, names):
     predictor_types = ['SVM', 'RF'] #TODO: add the rest
     
     results = {}
-    predictors['SVM'] = sklearn.svm.SVC()
-    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    #predictors = dict()
+    #predictors['SVM'] = sklearn.svm.SVC()
+    #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
 
-    #regular prediction
-    #for predictor in predictors.keys():
-    #    results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
-    #    print "{} on windows is done!".format(predictor)
+    # regular prediction
+    for predictor in predictor_types:
+        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+        print "{} on windows is done!".format(predictor)
 
 
     #This is 2 steps prediction - commitee - not parallel to regular prediction above
-    for predictor in predictors.keys():
-        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
-        print "{} on windows is done!".format(predictor)
-
+    #for predictor in predictors.keys():
+    #    results[predictor] = tuneAndTrain(predictors[predictor], data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
+    #    print "{} on windows is done!".format(predictor)
 
     # print "writing results to file..."
     # paths = [SVM_RES_WINDOWS_PATH,LOGISTIC_RES_WINDOWS_PATH,FOREST_RES_WINDOWS_PATH]
@@ -235,18 +243,19 @@ def predictOnWindows(data, lables, names):
 
     for type, res in results.items():
         print "error on {} is: {}".format(type, res)
+    return results
 
 def predictOnFeatures(data, labels):
     results = {}
     predictors = dict()
     predictors['SVM'] = sklearn.svm.SVC()
-    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-   # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-   # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
 
     #regular prediction
     for predictor in predictors.keys():
-        results[predictor] = predictByFeatures(predictor, data, labels, isEntire=False)
+        results[predictor] = predictByFeatures(predictors[predictor], data, labels, isEntire=False)
         print "{} on features is done!".format(predictor)
     return results
 
@@ -263,14 +272,26 @@ def predict():
     #linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
     #linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
     #linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
-    #predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
+    #results = predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
 
     # predicting on line-per-sample data:
     #-----------------------------------------
     data = readFileToFloat(DATA_TABLE_FILE_PATH)
     labels = readFileToFloat(LABELS_FOR_DATA_TABLE_FILE_PATH , names = None)
     results = predictOnFeatures(data, labels)
-    print results
+
+
+    
+    # writing results to file
+    #-----------------------------------------
+    with open(UNIFIED_RESULTS_PATH,'w') as theFile:
+        writer = csv.writer(theFile)
+        t = results.keys()[0]
+        keys = results[t].keys()
+        writer.writerow(["Feature"]+results.keys())
+        for key in keys:
+            row = [key] + [d[key] for d in results.values()]
+            writer.writerow(row)
     #plotData(linePerPatientData, labelsPerPatients)
 
 
