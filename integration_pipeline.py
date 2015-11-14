@@ -1,4 +1,9 @@
-__author__ = 'Jonathan'
+br__author__ = 'Jonathan'
+
+# comment following lines for use in Windows
+# Force matplotlib to not use any Xwindows backend.
+import matplotlib
+matplotlib.use('Agg')
 
 from dataManipulation.DataArrange import arrangeData
 from dataManipulation.createFeatureCSVs import createFeatures
@@ -9,6 +14,7 @@ from utils.utils import *
 from scale import scaleData
 from optimizationAndPrediction.visualization import visualFeatures
 from dataManipulation.NoiseClean import cleanNoise
+
 
 # orig_data_folder = '/homes/jonathan.s/workspace/data/data_sample_orig'
 # testing_data_folder = '/homes/jonathan.s/workspace/data/data_sample'
@@ -60,3 +66,4 @@ print "predictors where tested done!"
 # print "top features visualized!"
 
 print "all done!"
+	

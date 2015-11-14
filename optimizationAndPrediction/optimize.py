@@ -115,17 +115,18 @@ def genericOptimzer(X, y, pred, paramDict):
     parameters = paramDict.keys()
     param_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in paramDict.items()}
 
-    print 'searching grid (coarse):\nparams: {}'.format(paramDict)
+    print '[genericOptimzer] searching grid (coarse):\nparams: {}'.format(paramDict)
     grid = gridSearch(X, y, pred, param_grid)
     pred = grid.best_estimator_
     bestParamsFromCoarseSearch = pred.get_params()
 
     bestCoarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
-    print("The best parameters (coarse) are %s with a score of %0.2f"
+    print("[genericOptimzer] The best parameters (coarse) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
 
     C_range = param_grid['C']
     gamma_range = param_grid['gamma']
+    print "[genericOptimzer] saving coarse grid to file..."
     plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
 
     #get base-2 exponents, and define new grid limits
@@ -140,17 +141,18 @@ def genericOptimzer(X, y, pred, paramDict):
 
     newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in newParamDict.items()}
     print newParam_grid
-    print 'searching grid (fine):' \
+    print '[genericOptimzer] searching grid (fine):' \
           'params: {}'.format(newParamDict)
     grid = gridSearch(X, y, pred, newParam_grid)
     pred = grid.best_estimator_
     bestParamsFromFineSearch = pred.get_params()
     fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
-    print("The best parameters (fine) are %s with a score of %0.2f"
+    print("[genericOptimzer] The best parameters (fine) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
 
     C_range = newParam_grid['C']
     gamma_range = newParam_grid['gamma']
+    print "[genericOptimzer] saving fine grid to file..."
     plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
     runtime['plot_num'] += 1
 
@@ -178,12 +180,16 @@ def optimizeHyperParams(X, y, predictorType):
     if predictorType == 'RF':
         pred = RandomForestClassifier()
         paramDict = {
-              'n_estimators': {'min': 40, 'max': 650},\
-              'max_features': {'min': 1, 'max': 20}}
+              #'n_estimators': {'min': 40, 'max': 650},\
+              #'max_features': {'min': 1, 'max': 20}}
+              'n_estimators': {'min': 50, 'max': 50},\
+              'max_features': {'min': 20, 'max': 20}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}
         return genericOptimzer(X,y,pred, paramDict)
+    if predictorType == 'logisticReg':
+        return sklearn_temp.linear_model.LogisticRegressionCV(Cs=10).fit(X,y)
 
 
 

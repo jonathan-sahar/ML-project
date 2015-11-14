@@ -1,11 +1,9 @@
-__author__ = 'Inspiron'
-
 from random import shuffle
 
 from utils.constants import *
 from utils.utils import *
 from optimize import optimizeHyperParams
-import sklearn.svm #TODO other learners as well
+import sklearn.svm  # TODO other learners as well
 import sklearn.ensemble
 import sklearn.linear_model
 from FeatureSelection import SelectFeatures
@@ -16,21 +14,19 @@ import csv
 import pdb
 
 '''
-for all patients,
-line per entire data - predict by each feature of the line, all the features, and features of transform
-average of all lines per 5 min of patient - get one line per patient - should be just another features in the 'line per patient'
-lines per 5 min of data - predict by each feature, all the features.
+for all patients:
+line per entire data - predict by each feature of the line, all the features,
+and features of transform average of all lines per 5 min of patient
+- get one line per patient - should be just another features in the
+'line per patient' lines per 5 min of data - predict by each feature,
+all the features.
 '''
 
+
 def lossFunction(estimator, X, y, names=None):
-    pdb.set_trace()
+    # pdb.set_trace()
     loss = 0.0
-    for data,label in zip(X,y):
-        #print "lossFunction: ",estimator
-        #print "lossFunction: ", data
-        #print "lossFunction: ", labels
-        #print "lossFunction: ",estimator.predict(data)[0][0]
-        #weird patch, suddenly getting weired arrays for data and label... 30.10.15, 08:15, jonathan
+    for data, label in zip(X, y):
         if estimator.predict(data)[0] != label:
             loss += 1
     loss = loss / len(X)
@@ -42,7 +38,7 @@ def twoStepsLoss(estimator, X, y, names):
     folds = [tup for tup in folds]
     loss = 0.0
     for testIndices in folds[:2]:
-        print "in fold"
+        print "[twoStepsLoss] started new fold"
         testData = X[testIndices]
         testLabels = y[testIndices]
         testLabel = (y[testIndices])[0]
@@ -63,13 +59,15 @@ def twoStepsLoss(estimator, X, y, names):
 def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
     listOfLossValuesPerFeature = dict()
     features = linePerPatientData.dtype.names
-
+    print "entering features loop"
     for feature in features:
         values = linePerPatientData[feature]
+        print "[predictByFeatures] predicting on feature: {}".format(feature)
         dataForClassifier = [[v] for v in values]
         result = crossValidate(predictor, dataForClassifier, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
         error = np.mean(result)
         listOfLossValuesPerFeature[feature] = error
+    print "[predictByFeatures] finished prediction on feature: {}".format(feature)
     data = castStructuredArrayToRegular(linePerPatientData)
     result = crossValidate(predictor, data, linePerPatientLabels, lossFunction, NUMBER_OF_FOLDS)
     error = np.mean(result)
@@ -120,9 +118,13 @@ def create_cross_validation_idxs(num_samples, num_folds):
     return pairs
 
 def crossValidate(predictor, data, labels, lossFunction, numFolds):
+    count = 0 #for debug only
     folds = create_cross_validation_idxs(len(data), numFolds)
     errors = []
+    print "[crossValidate] entering main loop"
     for trainIndices, testIndices in folds:
+        count = count + 1 #for debug only
+        print "[crossValidate] starting fold No. {}".format(count)
         trainData = [data[i] for i in trainIndices]
         trainlabels = [labels[i] for i in trainIndices]
         testData = [data[i] for i in testIndices]
@@ -173,11 +175,14 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
     # pdb.set_trace()
    
     patientIds = np.array(patientIds[0])
+    print "patientIds: ", patientIds
     folds = LeavePLabelOut(patientIds, p=2) #
     folds = [tup for tup in folds]
     errors = []
-
+    fold_no = 0
     for trainIndices, testIndices in folds[:numFolds]:
+        fold_no += 1
+        print "[tuneAndTrain] started fold no. {} out of total {}".format(fold_no, numFolds)
         #Tuning
         #get actual data and labels for current fold
         trainData = data[trainIndices]
@@ -189,6 +194,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
             continue #can't train on elements that are all from the same group
 
         # todo: for testing - skip feature selection
+        # print "[tuneAndTrain] running feature selection..."
         # selectedFeatures = SelectFeatures(trainData, trainLabels)
         # selectedTrainData = [trainData[f] for f in selectedFeatures]
         # selectedTestData = [testData[f] for f in selectedFeatures]
@@ -199,12 +205,14 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTrainData = [list(tup) for tup in selectedTrainData]
         selectedTestData = [list(tup) for tup in selectedTestData]
 
+        print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
         #Training
         #predictor.fit(selectedFeaturesTrainData, trainLabels) //optimizeHyperParams also trains
 
         #Testing
+        print "[tuneAndTrain] testing predictor..."
         errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames))
 
     return np.array(errors).mean()
@@ -217,14 +225,14 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictor_types = ['SVM', 'RF'] #TODO: add the rest
+    predictor_types = ['SVM', 'RF', 'logisticReg'] #TODO: add the rest
     
     results = {}
     #predictors = dict()
     #predictors['SVM'] = sklearn.svm.SVC()
     #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-   # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-   # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
 
     # regular prediction
     for predictor in predictor_types:
@@ -248,13 +256,15 @@ def predictOnWindows(data, lables, names):
 def predictOnFeatures(data, labels):
     results = {}
     predictors = dict()
-    predictors['SVM'] = sklearn.svm.SVC()
+    # predictors['SVM'] = sklearn.svm.SVC()
     predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticReg'] = sklearn_temp.linear_model.LogisticRegressionCV(Cs=10)
     # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
     # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
-
+    print "created predictor"
     #regular prediction
     for predictor in predictors.keys():
+	print "predictByFeatures"
         results[predictor] = predictByFeatures(predictors[predictor], data, labels, isEntire=False)
         print "{} on features is done!".format(predictor)
     return results
@@ -267,20 +277,30 @@ def predict():
     except OSError:
         pass
 
+    print("predicting on data from {}".format(ROOT_DATA_FOLDER))    
     # predicting on data divided into windows:
     #-----------------------------------------
-    #linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
-    #linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
-    #linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
-    #results = predictOnWindows(linePerFiveMinutesData, linePerFiveMinutesLabels, linePerFiveMinutesNames)
+    # linePerFiveMinutesData = readFileToFloat(UNIFIED_AGGREGATED_DATA_PATH)
+    # linePerFiveMinutesLabels = readFileToFloat(UNIFIED_AGGREGATED_LABELS_PATH, names = None)
+    # linePerFiveMinutesNames = readFileAsIs(UNIFIED_AGGREGATED_PATIENT_NAMES_PATH)
+    # data = linePerFiveMinutesData
+    # labels = linePerFiveMinutesLabels 
+    # names = linePerFiveMinutesNames 
+    
+    data, labels, names = getRandomSample(1)
+    names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
+                    # expects names to be the [0] element of another list)
+    
+    results = predictOnWindows(data, labels, names)
 
     # predicting on line-per-sample data:
     #-----------------------------------------
-    data = readFileToFloat(DATA_TABLE_FILE_PATH)
-    labels = readFileToFloat(LABELS_FOR_DATA_TABLE_FILE_PATH , names = None)
-    results = predictOnFeatures(data, labels)
+    # data = readFileToFloat(DATA_TABLE_FILE_PATH)
+    # labels = readFileToFloat(LABELS_FOR_DATA_TABLE_FILE_PATH , names = None)
+    # print "predicting on features invoke"
+    # results = predictOnFeatures(data, labels)
 
-
+    # print "writing results to file"
     
     # writing results to file
     #-----------------------------------------
