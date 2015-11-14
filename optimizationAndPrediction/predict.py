@@ -175,7 +175,6 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
     # pdb.set_trace()
    
     patientIds = np.array(patientIds[0])
-    print "patientIds: ", patientIds
     folds = LeavePLabelOut(patientIds, p=2) #
     folds = [tup for tup in folds]
     errors = []
