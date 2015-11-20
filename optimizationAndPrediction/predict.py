@@ -224,7 +224,8 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictor_types = ['SVM', 'RF', 'logisticReg'] #TODO: add the rest
+    # predictor_types = ['SVM', 'RF', 'logisticReg'] #TODO: add the rest
+    predictor_types = ['RF', 'logisticReg'] #TODO: add the rest
     
     results = {}
     #predictors = dict()
@@ -235,6 +236,7 @@ def predictOnWindows(data, lables, names):
 
     # regular prediction
     for predictor in predictor_types:
+        print "running {} on windows".format(predictor)
         results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
         print "{} on windows is done!".format(predictor)
 
@@ -286,7 +288,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(1)
+    data, labels, names = getRandomSample(0.5)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     

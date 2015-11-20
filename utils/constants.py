@@ -112,10 +112,11 @@ selectedFeaturesAgg1 = ['MFCC_12_max', 'z_PSD_10_max', 'y_PSD_3_max', \
                         'z_PSD_6_max','PSD_500_max', 'PSD_250_max', 'MFCC_9_max', 'MFCC_10_max']
 
 
-GRIDSEARCH_RESOLUTION = 10 # number of values to check per parameter
-GRIDSEARCH_FOLDS = 4 # number of folds to base the gridSearch score on
+# GRIDSEARCH_RESOLUTION = 10 # number of values to check per parameter
+GRIDSEARCH_RESOLUTION = 5 # number of values to check per parameter
+# GRIDSEARCH_FOLDS = 4 # number of folds to base the gridSearch score on
+GRIDSEARCH_FOLDS = 1 # number of folds to base the gridSearch score on
 
-# FOR TESTING PURPOSES
 
 
 

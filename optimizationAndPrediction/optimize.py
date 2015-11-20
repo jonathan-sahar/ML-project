@@ -91,31 +91,46 @@ def gridSearch(X, y,pred, param_grid):
     :param base: what base to use with given exponents
     :return:
     '''
+    print "got param_grid: {}".format(param_grid)
     cv = StratifiedShuffleSplit(y, n_iter=NUMBER_OF_FOLDS, test_size=1./NUMBER_OF_FOLDS, random_state=42)
     grid = GridSearchCV(pred, param_grid=param_grid, cv=cv, scoring=lossScorer)
     grid.fit(X, y)
     return grid
 
 
-def genericOptimzer(X, y, pred, paramDict):
+def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
     '''
 
     :param X: data
     :param y: labels
     :param paramDict: of structure:
-                                    pDict = {'param_1':{'min': -5, 'max':1 for param, borders in params.items0}
-                                             'param_2':{'min': -5, 'max':1 for param, borders in params.items0}
-                                             .
-                                             .
-                                             .
+                                    pDict = {
+                                            'param_1':{
+                                                        'min': -5,
+                                                        'max': 1 
+                                                        }
+                                            'param_2':{
+                                                        'min': -100,
+                                                        'max':500
+                                                        }
+                                                .
+                                                .
+                                                .
                                     }
+    :param gridType: one of {'logarithmic', 'equidistance'}, sets the way we 
+                                distribute values of params in the given range.
+                                All ranges are distributed in the same way.
     :return: trained and tuned estimator
     '''
     plot_num = runtime['plot_num']
     parameters = paramDict.keys()
-    param_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in paramDict.items()}
-
-    print '[genericOptimzer] searching grid (coarse):\nparams: {}'.format(paramDict)
+    assert  gridType == 'logarithmic' or gridType == 'equidistance'
+    if gridType == 'logarithmic':
+        param_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in paramDict.items()}
+    elif gridType == 'equidistance':
+        param_grid = {param: list(np.unique(np.rint(np.linspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION))).astype(int)) for param, borders in paramDict.items()}
+        print '[genericOptimzer] passing on equidistance grid'
+    print '[genericOptimzer] searching grid (coarse):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
     grid = gridSearch(X, y, pred, param_grid)
     pred = grid.best_estimator_
     bestParamsFromCoarseSearch = pred.get_params()
@@ -124,10 +139,10 @@ def genericOptimzer(X, y, pred, paramDict):
     print("[genericOptimzer] The best parameters (coarse) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
 
-    C_range = param_grid['C']
-    gamma_range = param_grid['gamma']
-    print "[genericOptimzer] saving coarse grid to file..."
-    plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
+    # C_range = param_grid['C']
+    # gamma_range = param_grid['gamma']
+    # print "[genericOptimzer] saving coarse grid to file..."
+    # plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
 
     #get base-2 exponents, and define new grid limits
     margin = 1
@@ -139,10 +154,13 @@ def genericOptimzer(X, y, pred, paramDict):
                             }
                     for param, coarseExponent in exponents.items()}
 
-    newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION) for param, borders in newParamDict.items()}
-    print newParam_grid
-    print '[genericOptimzer] searching grid (fine):' \
-          'params: {}'.format(newParamDict)
+    if gridType == 'logarithmic':
+       newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION)\
+                                                                for param, borders in newParamDict.items()}
+    elif gridType == 'equidistance':
+        newParam_grid = {param: np.unique(np.rint(np.linspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION))).astype(int)\
+                                                                for param, borders in newParamDict.items()}
+    print '[genericOptimzer] searching grid (fine):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
     grid = gridSearch(X, y, pred, newParam_grid)
     pred = grid.best_estimator_
     bestParamsFromFineSearch = pred.get_params()
@@ -150,11 +168,11 @@ def genericOptimzer(X, y, pred, paramDict):
     print("[genericOptimzer] The best parameters (fine) are %s with a score of %0.2f"
           % (grid.best_params_, grid.best_score_))
 
-    C_range = newParam_grid['C']
-    gamma_range = newParam_grid['gamma']
-    print "[genericOptimzer] saving fine grid to file..."
-    plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
-    runtime['plot_num'] += 1
+    # C_range = newParam_grid['C']
+    # gamma_range = newParam_grid['gamma']
+    # print "[genericOptimzer] saving fine grid to file..."
+    # plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
+    # runtime['plot_num'] += 1
 
     return pred
 
@@ -187,7 +205,7 @@ def optimizeHyperParams(X, y, predictorType):
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}
-        return genericOptimzer(X,y,pred, paramDict)
+        return genericOptimzer(X,y,pred, paramDict, gridType='equidistance')
     if predictorType == 'logisticReg':
         return sklearn_temp.linear_model.LogisticRegressionCV(Cs=10).fit(X,y)
 
