@@ -1,7 +1,7 @@
 __author__ = 'Inspiron'
 
 
-from sklearn.preprocessing import StandardScaler
+from modified_sklearn.preprocessing import StandardScaler
 from utils.utils import *
 from utils.constants import *
 

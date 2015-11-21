@@ -1,15 +1,15 @@
 __author__ = 'Jonathan'
 import numpy as np
 
-from sklearn.svm import SVC
-from sklearn.cross_validation import StratifiedShuffleSplit
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import  make_scorer
-from sklearn.linear_model import LogisticRegressionCV
+from modified_sklearn.svm import SVC
+from modified_sklearn.cross_validation import StratifiedShuffleSplit
+from modified_sklearn.grid_search import GridSearchCV
+from modified_sklearn.metrics import  make_scorer
+from modified_sklearn.linear_model import LogisticRegressionCV
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib import ticker
-from sklearn.ensemble import RandomForestClassifier
+from modified_sklearn.ensemble import RandomForestClassifier
 
 from utils.constants import *
 
