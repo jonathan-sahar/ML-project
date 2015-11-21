@@ -194,13 +194,12 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
-        # todo: for testing - skip feature selection
-        # print "[tuneAndTrain] running feature selection..."
-        # selectedFeatures = SelectFeatures(trainData, trainLabels)
-        # selectedTrainData = [trainData[f] for f in selectedFeatures]
-        # selectedTestData = [testData[f] for f in selectedFeatures]
-        selectedTrainData = trainData
-        selectedTestData = testData
+        print "[tuneAndTrain] running feature selection..."
+        selectedFeatures = SelectFeatures(trainData, trainLabels)
+        selectedTrainData = [trainData[f] for f in selectedFeatures]
+        selectedTestData = [testData[f] for f in selectedFeatures]
+        # selectedTrainData = trainData
+        # selectedTestData = testData
 
         # to get the data in a list-of-list format that optimizeHyperParams expects.
         selectedTrainData = [list(tup) for tup in selectedTrainData]
@@ -227,7 +226,7 @@ def predictOnWindows(data, lables, names):
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
     predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    # predictor_types = ['logisticReg']
+    # predictor_types = ['SVM']
     
     results = {}
     #predictors = dict()
@@ -295,7 +294,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(5)
+    data, labels, names = getRandomSample(0.5)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
