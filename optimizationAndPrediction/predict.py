@@ -216,7 +216,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
 
         #Testing
         print "[tuneAndTrain] testing predictor..."
-        errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames)) #chacnge lossFunction to twoStepsLoss for conf_8
+        errors.append(twoStepsLoss(predictor, selectedTestData, testLabels, testNames)) # change lossFunction to twoStepsLoss for conf_8
 
     return np.array(errors).mean()
 
