@@ -13,6 +13,8 @@ import dumper
 import csv
 import pdb
 
+import warnings
+warnings.filterwarnings("ignore")
 '''
 for all patients:
 line per entire data - predict by each feature of the line, all the features,
@@ -224,8 +226,8 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    # predictor_types = ['SVM', 'RF', 'logisticReg'] #TODO: add the rest
-    predictor_types = ['RF', 'logisticReg'] #TODO: add the rest
+    predictor_types = ['SVM', 'RF', 'logisticReg'] 
+    # predictor_types = ['logisticReg']
     
     results = {}
     #predictors = dict()
@@ -259,7 +261,7 @@ def predictOnFeatures(data, labels):
     predictors = dict()
     # predictors['SVM'] = sklearn.svm.SVC()
     predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    # predictors['logisticReg'] = sklearn_temp.linear_model.LogisticRegressionCV(Cs=10)
+    # predictors['logisticReg'] = sklearn.linear_model.LogisticRegressionCV(Cs=10)
     # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
     # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
     print "created predictor"
@@ -277,7 +279,11 @@ def predict():
         os.mkdir(RESULTS_FOLDER)
     except OSError:
         pass
-
+    try:
+        os.mkdir("timing")
+    except OSError:
+        pass
+    os.system('touch timing/start_time')
     print("predicting on data from {}".format(ROOT_DATA_FOLDER))    
     # predicting on data divided into windows:
     #-----------------------------------------
@@ -288,12 +294,11 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(0.5)
+    data, labels, names = getRandomSample(5)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
     results = predictOnWindows(data, labels, names)
-
     # predicting on line-per-sample data:
     #-----------------------------------------
     # data = readFileToFloat(DATA_TABLE_FILE_PATH)
@@ -305,14 +310,24 @@ def predict():
     
     # writing results to file
     #-----------------------------------------
+
+    # Uncomment below for configuration No.1
+    # with open(UNIFIED_RESULTS_PATH,'w') as theFile:
+    #     writer = csv.writer(theFile)
+    #     print '[predictOnWindows] results: {}'.format(results)
+    #     t = results.keys()[0]
+    #     keys = results[t].keys()
+    #     writer.writerow(["Feature"]+results.keys())
+    #     for key in keys:
+    #         row = [key] + [d[key] for d in results.values()]
+    #         writer.writerow(row)
     with open(UNIFIED_RESULTS_PATH,'w') as theFile:
         writer = csv.writer(theFile)
-        t = results.keys()[0]
-        keys = results[t].keys()
-        writer.writerow(["Feature"]+results.keys())
-        for key in keys:
-            row = [key] + [d[key] for d in results.values()]
-            writer.writerow(row)
+        print '[predictOnWindows] results: {}'.format(results)
+        writer.writerow(["Algorithm", "Error"])
+        for key, value in results.items():
+            writer.writerow([key, value])
+    os.system('touch timing/end_time')
     #plotData(linePerPatientData, labelsPerPatients)
 
 

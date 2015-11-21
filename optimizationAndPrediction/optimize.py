@@ -5,6 +5,7 @@ from sklearn.svm import SVC
 from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import  make_scorer
+from sklearn.linear_model import LogisticRegressionCV
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib import ticker
@@ -100,7 +101,7 @@ def gridSearch(X, y,pred, param_grid):
 
 def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
     '''
-
+    TODO: add parameter: a dict that holds ready lists of parameters for the grid, and append this dict to newParam_grid
     :param X: data
     :param y: labels
     :param paramDict: of structure:
@@ -207,7 +208,7 @@ def optimizeHyperParams(X, y, predictorType):
               #"criterion": ["gini", "entropy"]}
         return genericOptimzer(X,y,pred, paramDict, gridType='equidistance')
     if predictorType == 'logisticReg':
-        return sklearn_temp.linear_model.LogisticRegressionCV(Cs=10).fit(X,y)
+        return LogisticRegressionCV(Cs=10).fit(X,y)
 
 
 

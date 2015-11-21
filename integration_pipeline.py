@@ -1,4 +1,4 @@
-br__author__ = 'Jonathan'
+__author__ = 'Jonathan'
 
 # comment following lines for use in Windows
 # Force matplotlib to not use any Xwindows backend.
