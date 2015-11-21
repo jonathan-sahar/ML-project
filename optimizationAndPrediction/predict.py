@@ -47,14 +47,14 @@ def twoStepsLoss(estimator, X, y, names):
         sickCount = 0.0
         for data in testData:
             sickCount = sickCount + (estimator.predict(data)[0])
-        sickCount = sickCount / len(X)
+        sickCount = sickCount / len(testLabels)
         if sickCount > 0.5: #mostly sick
             if testLabel == 0:
                 loss = loss + 1
         else:
             if testLabel == 1:
                 loss = loss + 1
-    loss = 1 - (loss/2)
+    loss = 1 - (loss/len(testIndices))
     return loss
 
 
@@ -283,6 +283,7 @@ def predict():
         os.mkdir("timing")
     except OSError:
         pass
+
     os.system('touch timing/start_time')
     print("predicting on data from {}".format(ROOT_DATA_FOLDER))    
     # predicting on data divided into windows:
