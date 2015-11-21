@@ -2,13 +2,13 @@ __author__ = 'Inspiron'
 
 from utils.constants import *
 from utils.utils import *
-import sklearn
+import modified_sklearn
 from optimizationAndPrediction.predict import *
-from sklearn.cross_validation import LeavePLabelOut
-from sklearn.ensemble import *
+from modified_sklearn.cross_validation import LeavePLabelOut
+from modified_sklearn.ensemble import *
 import optimizationAndPrediction.FeatureSelection
 import dataManipulation.createFeatureCSVs
-from sklearn.svm import SVC
+from modified_sklearn.svm import SVC
 
 def tuneAndTrainTest(estimatorType, data, labels, numFolds, patientIds, roundNum, estimator, lossFunction = lossFunction):
 
