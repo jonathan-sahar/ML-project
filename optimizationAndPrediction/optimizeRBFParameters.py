@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
-from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-from sklearn.cross_validation import StratifiedShuffleSplit
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import  make_scorer
+from modified_sklearn.svm import SVC
+from modified_sklearn.preprocessing import StandardScaler
+from modified_sklearn.cross_validation import StratifiedShuffleSplit
+from modified_sklearn.grid_search import GridSearchCV
+from modified_sklearn.metrics import  make_scorer
 
 from utils.constants import *
 from utils.utils import readFileToFloat, castStructuredArrayToRegular

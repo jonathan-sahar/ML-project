@@ -1,20 +1,23 @@
-from random import shuffle
+from modified_sklearn.svm import SVC
+from modified_sklearn.ensemble import RandomForestClassifier
+from modified_sklearn.linear_model import LogisticRegressionCV
+from modified_sklearn.cross_validation import LeavePLabelOut
+from modified_sklearn import grid_search
+
 
 from utils.constants import *
 from utils.utils import *
 from optimize import optimizeHyperParams
-import sklearn.svm  # TODO other learners as well
-import sklearn.ensemble
-import sklearn.linear_model
 from FeatureSelection import SelectFeatures
-from sklearn.cross_validation import LeavePLabelOut
-from sklearn import grid_search
+
+from random import shuffle
 import dumper
 import csv
 import pdb
 
 import warnings
 warnings.filterwarnings("ignore")
+
 '''
 for all patients:
 line per entire data - predict by each feature of the line, all the features,
@@ -147,16 +150,16 @@ def predictOnEntire():
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
     #==============================================================================================
 
-    predictor = sklearn.svm.SVC()
+    predictor = SVC()
     svmLinePerPatientResults  = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "svm on entire is done!"
 
-    predictor = sklearn.linear_model.LogisticRegression('l2', True)
+    predictor = LogisticRegression('l2', True)
     logisticRegLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "logisticReg on entire is done!"
 
 
-    predictor = sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
+    predictor = RandomForestClassifier(4) #4 is sqrt of number of patients
     randomForestLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "randomForest on entire is done!"
 
@@ -194,7 +197,6 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
-        # todo: for testing - skip feature selection
         # print "[tuneAndTrain] running feature selection..."
         # selectedFeatures = SelectFeatures(trainData, trainLabels)
         # selectedTrainData = [trainData[f] for f in selectedFeatures]
@@ -214,7 +216,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
 
         #Testing
         print "[tuneAndTrain] testing predictor..."
-        errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames))
+        errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames)) #chacnge lossFunction to twoStepsLoss for conf_8
 
     return np.array(errors).mean()
 
@@ -227,14 +229,14 @@ def predictOnWindows(data, lables, names):
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
     predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    # predictor_types = ['logisticReg']
+    # predictor_types = ['SVM']
     
     results = {}
     #predictors = dict()
-    #predictors['SVM'] = sklearn.svm.SVC()
-    #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    #predictors['SVM'] = SVC()
+    #predictors['randomForest'] = RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticRegL2'] = LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = LogisticRegression('l1', multi_class='ovr')
 
     # regular prediction
     for predictor in predictor_types:
@@ -259,11 +261,11 @@ def predictOnWindows(data, lables, names):
 def predictOnFeatures(data, labels):
     results = {}
     predictors = dict()
-    # predictors['SVM'] = sklearn.svm.SVC()
-    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    # predictors['logisticReg'] = sklearn.linear_model.LogisticRegressionCV(Cs=10)
-    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    # predictors['SVM'] = SVC()
+    predictors['randomForest'] = RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticReg'] = LogisticRegressionCV(Cs=10)
+    # predictors['logisticRegL2'] = LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = LogisticRegression('l1', multi_class='ovr')
     print "created predictor"
     #regular prediction
     for predictor in predictors.keys():
@@ -295,7 +297,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(5)
+    data, labels, names = getRandomSample(0.5)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     

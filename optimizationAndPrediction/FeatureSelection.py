@@ -2,10 +2,10 @@ __author__ = 'Inspiron'
 
 from utils.constants import *
 from utils.utils import *
-from sklearn.linear_model import LogisticRegression
+from modified_sklearn.linear_model import LogisticRegression
 import numpy as np
-from sklearn.feature_selection import RFECV
-from sklearn.linear_model import LogisticRegression
+from modified_sklearn.feature_selection import RFECV
+from modified_sklearn.linear_model import LogisticRegression
 
 def SelectFeatures(featuresStructuresArray, labels):
     estimator = LogisticRegression('l2', False)

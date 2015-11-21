@@ -1,12 +1,12 @@
 __author__ = 'Jonathan'
 from   utils.utils import *
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.svm import SVC
+from modified_sklearn.preprocessing import StandardScaler
+from modified_sklearn.cluster import KMeans
+from modified_sklearn.svm import SVC
 import itertools
 import operator
 from optimize import optimizeHyperParams
-from sklearn.cross_validation import LeavePLabelOut
+from modified_sklearn.cross_validation import LeavePLabelOut
 from predict import lossFunction
 
 NUM_CLUSTERS = 50
