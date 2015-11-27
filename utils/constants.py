@@ -33,13 +33,13 @@ ENTIRE_TABLE_PREFIX = 'ENTIREFILE'
 #Server
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/data_sample'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/1_feature_by_feature/'
-ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/2_time_windows_and_stat_features/'
+#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/2_time_windows_and_stat_features/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/3_feature_selection/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/4_scaling/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/5_dimentionality_reduction_features/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/6_variance_across_features/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/7_cleanNoise/'
-#ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/8_committee/'
+ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/8_committee/'
 #ROOT_DATA_FOLDER = '/homes/jonathan.s/workspace/data/configuration_runs/9_clustering/'
 
 UNIFIED_TABLES_FOLDER = os.path.join(ROOT_DATA_FOLDER, 'Unified Tables')
