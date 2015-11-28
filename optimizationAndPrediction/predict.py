@@ -241,7 +241,7 @@ def predictOnWindows(data, lables, names):
     # regular prediction
     for predictor in predictor_types:
         print "running {} on windows".format(predictor)
-        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+        results[predictor] = tuneAndTrainForClustering(predictor, data, lables, names, NUMBER_OF_FOLDS)
         print "{} on windows is done!".format(predictor)
 
 
