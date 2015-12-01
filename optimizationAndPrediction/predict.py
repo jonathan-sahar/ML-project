@@ -295,7 +295,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(5)
+    data, labels, names = getRandomSample(2)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
