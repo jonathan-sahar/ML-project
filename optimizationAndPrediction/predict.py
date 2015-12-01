@@ -38,18 +38,18 @@ def lossFunction(estimator, X, y, names=None):
     return 1-loss
 
 def twoStepsLoss(estimator, X, y, names):
-    print names
     folds = LeavePLabelOut(names, p=1) #ugly patch - correct syntax?
     folds = [tup for tup in folds]
     loss = 0.0
-    for testIndices in folds[:2]:
-        print "[twoStepsLoss] started new fold"
-        testData = X[testIndices]
-        testLabels = y[testIndices]
-        testLabel = (y[testIndices])[0]
+    for otherPatient ,testIndices in folds[:2]:
+        testIndices = np.array(testIndices)
+        testData = [X[index] for index in testIndices]
+        #testData = testData[0]
+        testLabels = [y[index] for index in testIndices]
+        testLabel = (y[testIndices[0]])
         sickCount = 0.0
         for data in testData:
-            sickCount = sickCount + (estimator.predict(data)[0])
+            sickCount = sickCount + estimator.predict(data)
         sickCount = sickCount / len(testLabels)
         if sickCount > 0.5: #mostly sick
             if testLabel == 0:
@@ -57,8 +57,8 @@ def twoStepsLoss(estimator, X, y, names):
         else:
             if testLabel == 1:
                 loss = loss + 1
-    loss = 1 - (loss/len(testIndices))
-    return loss
+    success = 1 - (loss/2)
+    return success
 
 
 def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
