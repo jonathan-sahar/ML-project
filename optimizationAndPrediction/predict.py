@@ -196,15 +196,17 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
 
         print "[tuneAndTrain] running feature selection..."
         selectedFeatures = SelectFeatures(trainData, trainLabels)
-        selectedTrainData = [trainData[f] for f in selectedFeatures]
-        selectedTestData = [testData[f] for f in selectedFeatures]
+        pdb.set_trace()
+        selectedTestData = tuple([testData[f] for f in selectedFeatures])
+        selectedTrainData = tuple([trainData[f] for f in selectedFeatures])
+
+        selectedTestData = np.column_stack(selectedTestData).tolist() 
+        selectedTrainData = np.column_stack(selectedTrainData).tolist() 
+
         # selectedTrainData = trainData
         # selectedTestData = testData
 
-        # to get the data in a list-of-list format that optimizeHyperParams expects.
-        selectedTrainData = [list(tup) for tup in selectedTrainData]
-        selectedTestData = [list(tup) for tup in selectedTestData]
-
+        pdb.set_trace()
         print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
