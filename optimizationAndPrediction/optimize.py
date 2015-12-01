@@ -189,6 +189,7 @@ def optimizeHyperParams(X, y, predictorType):
     :param predictorType:
     :return:
     '''
+    n_features = len(X[0])
     if predictorType == 'SVM':
         # paramDict = {'C':{'min': -5, 'max':10},\
         #              'gamma':{'min': -10, 'max':5}
@@ -205,7 +206,7 @@ def optimizeHyperParams(X, y, predictorType):
               #'n_estimators': {'min': 40, 'max': 650},\
               #'max_features': {'min': 1, 'max': 20}}
               'n_estimators': {'min': 50, 'max': 50},\
-              'max_features': {'min': 20, 'max': 20}}
+              'max_features': {'min': 1, 'max': n_features}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}

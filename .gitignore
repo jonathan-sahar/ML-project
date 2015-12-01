@@ -1,0 +1,9 @@
+*.pyc
+*.txt
+conf_*
+jonathan_testing.py
+print_stats.py
+tags
+timing/
+tmp
+
