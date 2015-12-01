@@ -134,7 +134,7 @@ def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
         param_grid = {param: list(np.unique(np.rint(np.linspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION))).astype(int)) for param, borders in paramDict.items()}
         print '[genericOptimzer] passing on equidistance grid'
     print '[genericOptimzer] searching grid (coarse):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
-    pdb.set_trace()
+    #pdb.set_trace()
     grid = gridSearch(X, y, pred, param_grid)
     pred = grid.best_estimator_
     bestParamsFromCoarseSearch = pred.get_params()

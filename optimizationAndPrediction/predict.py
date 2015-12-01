@@ -196,7 +196,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
 
         print "[tuneAndTrain] running feature selection..."
         selectedFeatures = SelectFeatures(trainData, trainLabels)
-        pdb.set_trace()
+        #pdb.set_trace()
         selectedTestData = tuple([testData[f] for f in selectedFeatures])
         selectedTrainData = tuple([trainData[f] for f in selectedFeatures])
 
@@ -206,7 +206,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         # selectedTrainData = trainData
         # selectedTestData = testData
 
-        pdb.set_trace()
+        #pdb.set_trace()
         print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
