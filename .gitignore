@@ -1,43 +1,18 @@
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
+conf_2_time_windows_and_stat_features
+conf_3_feature_selection
+conf_4_scaling
+conf_5_dimentionality_reduction_features
+conf_6_variance_across_features
+conf_7_cleanNoise
+conf_8_committee
+conf_9_clustering
+*.swp
+tags
+timing/
+tmp
+*.pyc
+.gitignore
+jonathan_testing.py
+print_stats.py
+profile.txt
 
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-# =========================
-# Operating System Files
-# =========================
-
-# OSX
-# =========================
-
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
