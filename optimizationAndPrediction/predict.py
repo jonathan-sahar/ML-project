@@ -9,7 +9,7 @@ import sklearn.linear_model
 from FeatureSelection import SelectFeatures
 from sklearn.cross_validation import LeavePLabelOut
 from sklearn import grid_search
-import dumper
+#import dumper
 import csv
 import pdb
 
@@ -296,7 +296,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(0.5)
+    data, labels, names = getRandomSample(2)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
