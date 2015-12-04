@@ -203,8 +203,10 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTestData = testData
 
         # to get the data in a list-of-list format that optimizeHyperParams expects.
-        selectedTrainData = [list(tup) for tup in selectedTrainData]
-        selectedTestData = [list(tup) for tup in selectedTestData]
+        selectedTrainData = castStructuredArrayToRegular(selectedTrainData).tolist() 
+        selectedTestData = castStructuredArrayToRegular(selectedTestData).tolist() 
+        #selectedTestData = [list(tup) for tup in selectedTestData]
+        #selectedTestData = [list(tup) for tup in selectedTestData]
 
         print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
@@ -226,8 +228,8 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    # predictor_types = ['logisticReg']
+    #predictor_types = ['SVM', 'RF', 'logisticReg'] 
+    predictor_types = ['RF']
     
     results = {}
     #predictors = dict()
@@ -295,7 +297,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(2)
+    data, labels, names = getRandomSample(0.5)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
