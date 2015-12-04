@@ -197,12 +197,13 @@ def optimizeHyperParams(X, y, predictorType):
         return  genericOptimzer(X,y,pred, paramDict)
 
     if predictorType == 'RF':
+        n_features = len(X[0])
         pred = RandomForestClassifier()
         paramDict = {
               #'n_estimators': {'min': 40, 'max': 650},\
               #'max_features': {'min': 1, 'max': 20}}
               'n_estimators': {'min': 50, 'max': 50},\
-              'max_features': {'min': 20, 'max': 20}}
+              'max_features': {'min': 20, 'max': n_features}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}

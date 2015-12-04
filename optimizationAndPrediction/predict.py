@@ -205,7 +205,6 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         selectedTestData = castStructuredArrayToRegular(testData).tolist()
 
         
-        pdb.set_trace()
         print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
@@ -226,11 +225,7 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-<<<<<<< Updated upstream
-    #predictor_types = ['SVM', 'RF', 'logisticReg'] 
-=======
     # predictor_types = ['SVM', 'RF', 'logisticReg'] 
->>>>>>> Stashed changes
     predictor_types = ['RF']
     
     results = {}
