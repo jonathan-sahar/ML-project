@@ -13,7 +13,8 @@ def SelectFeatures(featuresStructuresArray, labels):
     featureNames = featuresStructuresArray.dtype.names
     featureData = castStructuredArrayToRegular(featuresStructuresArray)
 
-    featuresSelector = RFECV(estimator, cv=8)
+    featuresSelector = RFECV(estimator, cv=2)
+    
     featuresSelector.fit(featureData , labels)
     selectedIndices = featuresSelector.get_support()
 

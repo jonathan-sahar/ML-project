@@ -194,20 +194,18 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         if np.all(trainLabels == trainLabels[0]):
             continue #can't train on elements that are all from the same group
 
-        # todo: for testing - skip feature selection
-        # print "[tuneAndTrain] running feature selection..."
+        print "[tuneAndTrain] running feature selection..."
         # selectedFeatures = SelectFeatures(trainData, trainLabels)
-        # selectedTrainData = [trainData[f] for f in selectedFeatures]
-        # selectedTestData = [testData[f] for f in selectedFeatures]
-        selectedTrainData = trainData
-        selectedTestData = testData
+        # pdb.set_trace()
+        # selectedTestData = tuple([testData[f] for f in selectedFeatures])
+        # selectedTrainData = tuple([trainData[f] for f in selectedFeatures])
 
-        # to get the data in a list-of-list format that optimizeHyperParams expects.
-        selectedTrainData = castStructuredArrayToRegular(selectedTrainData).tolist() 
-        selectedTestData = castStructuredArrayToRegular(selectedTestData).tolist() 
-        #selectedTestData = [list(tup) for tup in selectedTestData]
-        #selectedTestData = [list(tup) for tup in selectedTestData]
 
+        selectedTrainData = castStructuredArrayToRegular(trainData).tolist()
+        selectedTestData = castStructuredArrayToRegular(testData).tolist()
+
+        
+        pdb.set_trace()
         print "[tuneAndTrain] running optimizeHyperParams..."
         predictor = optimizeHyperParams(selectedTrainData, trainLabels, predictorType)
 
@@ -228,7 +226,11 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
+<<<<<<< Updated upstream
     #predictor_types = ['SVM', 'RF', 'logisticReg'] 
+=======
+    # predictor_types = ['SVM', 'RF', 'logisticReg'] 
+>>>>>>> Stashed changes
     predictor_types = ['RF']
     
     results = {}
