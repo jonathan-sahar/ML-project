@@ -145,15 +145,23 @@ def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
     # print "[genericOptimzer] saving coarse grid to file..."
     # plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
 
-    #get base-2 exponents, and define new grid limits
-    margin = 1
-    exponents = {param: np.floor(np.log10(value)) for param, value in bestCoarseParams.items() }
-
-    newParamDict = {param: \
-                        {'min': coarseExponent, \
-                         'max': coarseExponent + margin \
-                            }
-                    for param, coarseExponent in exponents.items()}
+    if gridType == 'logarithmic':
+        margin = 1
+        #get base-2 exponents, and define new grid limits
+        exponents = {param: np.floor(np.log10(value)) for param, value in bestCoarseParams.items() }
+    
+        newParamDict = {param: \
+                            {'min': coarseExponent, \
+                             'max': coarseExponent + margin \
+                                }
+                        for param, coarseExponent in exponents.items()}
+    elif gridType == 'equidistance':
+        margin = 10
+        newParamDict = {param: \
+                            {'min': val - margin, \
+                             'max': val + margin\
+                                }
+                        for param,  val in exponents.items()}
 
     if gridType == 'logarithmic':
        newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION)\
@@ -203,7 +211,7 @@ def optimizeHyperParams(X, y, predictorType):
               #'n_estimators': {'min': 40, 'max': 650},\
               #'max_features': {'min': 1, 'max': 20}}
               'n_estimators': {'min': 50, 'max': 50},\
-              'max_features': {'min': 20, 'max': n_features}}
+              'max_features': {'min': 20, 'max': n_features - 20}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}
