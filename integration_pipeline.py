@@ -49,9 +49,9 @@ print "here we go!"
 #print "data cleaned of noise done!"
 #
 
-#print "creating features..."
-#createFeatures()
-#print "features created done!"
+print "creating features..."
+createFeatures()
+print "features created done!"
 
 # print "scaling data..."
 # scaleData()
