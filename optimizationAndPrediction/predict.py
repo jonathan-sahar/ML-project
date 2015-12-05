@@ -178,10 +178,12 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
    
     patientIds = np.array(patientIds[0])
     folds = LeavePLabelOut(patientIds, p=2) #
-    folds = [tup for tup in folds]
+    chosen_folds = np.random.randint(len(folds), size = numFolds)
+    folds = [tup for tup in folds] # make a proper list out o fthe iterator object returned by LeavePLabelOut
+    folds = [folds[i] for i in chosen_folds] # slice out only a random sample of size numFolds
     errors = []
     fold_no = 0
-    for trainIndices, testIndices in folds[:numFolds]:
+    for trainIndices, testIndices in folds:
         fold_no += 1
         print "[tuneAndTrain] started fold no. {} out of total {}".format(fold_no, numFolds)
         #Tuning
