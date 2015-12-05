@@ -35,18 +35,18 @@ def lossFunction(estimator, X, y, names=None):
     return 1-loss
 
 def twoStepsLoss(estimator, X, y, names):
-    print names
     folds = LeavePLabelOut(names, p=1) #ugly patch - correct syntax?
     folds = [tup for tup in folds]
     loss = 0.0
-    for testIndices in folds[:2]:
-        print "[twoStepsLoss] started new fold"
-        testData = X[testIndices]
-        testLabels = y[testIndices]
-        testLabel = (y[testIndices])[0]
+    for otherPatient ,testIndices in folds[:2]:
+        testIndices = np.array(testIndices)
+        testData = [X[index] for index in testIndices]
+        #testData = testData[0]
+        testLabels = [y[index] for index in testIndices]
+        testLabel = (y[testIndices[0]])
         sickCount = 0.0
         for data in testData:
-            sickCount = sickCount + (estimator.predict(data)[0])
+            sickCount = sickCount + estimator.predict(data)
         sickCount = sickCount / len(testLabels)
         if sickCount > 0.5: #mostly sick
             if testLabel == 0:
@@ -54,8 +54,8 @@ def twoStepsLoss(estimator, X, y, names):
         else:
             if testLabel == 1:
                 loss = loss + 1
-    loss = 1 - (loss/len(testIndices))
-    return loss
+    success = 1 - (loss/2)
+    return success
 
 
 def predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, isEntire):
@@ -213,7 +213,7 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
 
         #Testing
         print "[tuneAndTrain] testing predictor..."
-        errors.append(lossFunction(predictor, selectedTestData, testLabels, testNames))
+        errors.append(twoStepsLoss(predictor, selectedTestData, testLabels, testNames)) # change lossFunction to twoStepsLoss for conf_8
 
     return np.array(errors).mean()
 
@@ -242,14 +242,11 @@ def predictOnWindows(data, lables, names):
         print "{} on windows is done!".format(predictor)
 
 
-    #This is 2 steps prediction - commitee - not parallel to regular prediction above
-    #for predictor in predictors.keys():
-    #    results[predictor] = tuneAndTrain(predictors[predictor], data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
-    #    print "{} on windows is done!".format(predictor)
-
-    # print "writing results to file..."
-    # paths = [SVM_RES_WINDOWS_PATH,LOGISTIC_RES_WINDOWS_PATH,FOREST_RES_WINDOWS_PATH]
-    # for res, path in zip(results.values(), paths):
+   # committee prediction
+    for predictor in predictor_types:
+        print "running {} on windows".format(predictor)
+        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS, twoStepsLoss)
+        print "{} on windows is done!".format(predictor)
 
     for type, res in results.items():
         print "error on {} is: {}".format(type, res)
