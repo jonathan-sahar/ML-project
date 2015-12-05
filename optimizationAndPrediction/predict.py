@@ -3,13 +3,13 @@ from random import shuffle
 from utils.constants import *
 from utils.utils import *
 from optimize import optimizeHyperParams
-import sklearn.svm  # TODO other learners as well
-import sklearn.ensemble
-import sklearn.linear_model
+from sklearn.svm import SVC  # TODO other learners as well
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from FeatureSelection import SelectFeatures
 from sklearn.cross_validation import LeavePLabelOut
 from sklearn import grid_search
-import dumper
+
 import csv
 import pdb
 
@@ -147,16 +147,16 @@ def predictOnEntire():
     #each result is a ***Dictionary*** with all learning Iterations (features, 'all', transformation')
     #==============================================================================================
 
-    predictor = sklearn.svm.SVC()
+    predictor = SVC()
     svmLinePerPatientResults  = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "svm on entire is done!"
 
-    predictor = sklearn.linear_model.LogisticRegression('l2', True)
+    predictor = LogisticRegression('l2', True)
     logisticRegLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "logisticReg on entire is done!"
 
 
-    predictor = sklearn.ensemble.RandomForestClassifier(4) #4 is sqrt of number of patients
+    predictor =RandomForestClassifier(4) #4 is sqrt of number of patients
     randomForestLinePerPatientResults = predictByFeatures(predictor, linePerPatientData, linePerPatientLabels, True)
     print "randomForest on entire is done!"
 
