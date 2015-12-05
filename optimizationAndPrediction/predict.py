@@ -230,10 +230,10 @@ def predictOnWindows(data, lables, names):
     
     results = {}
     #predictors = dict()
-    #predictors['SVM'] = sklearn.svm.SVC()
-    #predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    #predictors['SVM'] = SVC()
+    #predictors['randomForest'] = RandomForestClassifier() #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticRegL2'] = LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = LogisticRegression('l1', multi_class='ovr')
 
     # regular prediction
     for predictor in predictor_types:
@@ -258,11 +258,11 @@ def predictOnWindows(data, lables, names):
 def predictOnFeatures(data, labels):
     results = {}
     predictors = dict()
-    # predictors['SVM'] = sklearn.svm.SVC()
-    predictors['randomForest'] = sklearn.ensemble.RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
-    # predictors['logisticReg'] = sklearn.linear_model.LogisticRegressionCV(Cs=10)
-    # predictors['logisticRegL2'] = sklearn.linear_model.LogisticRegression('l2', dual = False, multi_class='ovr')
-    # predictors['logisticRegL1'] = sklearn.linear_model.LogisticRegression('l1', multi_class='ovr')
+    # predictors['SVM'] = SVC()
+    predictors['randomForest'] = RandomForestClassifier(max_features="sqrt") #65 is aprox the sqrt of the fiveMinutes we have in FIRSTDATA
+    # predictors['logisticReg'] = LogisticRegressionCV(Cs=10)
+    # predictors['logisticRegL2'] = LogisticRegression('l2', dual = False, multi_class='ovr')
+    # predictors['logisticRegL1'] = LogisticRegression('l1', multi_class='ovr')
     print "created predictor"
     #regular prediction
     for predictor in predictors.keys():
