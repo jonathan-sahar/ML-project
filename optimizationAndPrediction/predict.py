@@ -225,8 +225,8 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    # predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    predictor_types = ['RF']
+    predictor_types = ['SVM', 'RF', 'logisticReg'] 
+    #predictor_types = ['RF']
     
     results = {}
     #predictors = dict()
