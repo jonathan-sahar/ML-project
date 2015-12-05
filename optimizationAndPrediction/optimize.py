@@ -210,8 +210,8 @@ def optimizeHyperParams(X, y, predictorType):
         paramDict = {
               #'n_estimators': {'min': 40, 'max': 650},\
               #'max_features': {'min': 1, 'max': 20}}
-              n_estimators': {'min': 20, 'max': 90},\
-              max_features': {'min': 6, 'max': n_features - 20}}
+              'n_estimators': {'min': 20, 'max': 90},\
+              'max_features': {'min': 6, 'max': n_features - 20}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],
               #"criterion": ["gini", "entropy"]}
