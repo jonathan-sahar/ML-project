@@ -73,7 +73,7 @@ def divideToWindows(dataMatrix, windowLength):
 def createFeatures(outputDir = UNIFIED_TABLES_FOLDER):
     #define the aggregators for each table
     aggregatorsListShort = [numSamplesInFreqRange]
-    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange]
+    aggregatorsListLong = [statisticsForAllColoumns, numSubWindowsInFreqRange, waveletCompressForAllColoumns]
     aggregatorsListEntire = [statisticsForAllColoumns, averageOnWindows, waveletCompressForAllColoumns]
 
     #initialize
