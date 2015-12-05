@@ -134,56 +134,61 @@ def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
     print '[genericOptimzer] searching grid (coarse):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
     grid = gridSearch(X, y, pred, param_grid)
     pred = grid.best_estimator_
-    bestParamsFromCoarseSearch = pred.get_params()
-
-    bestCoarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
-    print("[genericOptimzer] The best parameters (coarse) are %s with a score of %0.2f"
-          % (grid.best_params_, grid.best_score_))
-
-    # C_range = param_grid['C']
-    # gamma_range = param_grid['gamma']
-    # print "[genericOptimzer] saving coarse grid to file..."
-    # plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
-
-    if gridType == 'logarithmic':
-        margin = 1
-        #get base-2 exponents, and define new grid limits
-        exponents = {param: np.floor(np.log10(value)) for param, value in bestCoarseParams.items() }
-    
-        newParamDict = {param: \
-                            {'min': coarseExponent, \
-                             'max': coarseExponent + margin \
-                                }
-                        for param, coarseExponent in exponents.items()}
-    elif gridType == 'equidistance':
-        margin = 10
-        newParamDict = {param: \
-                            {'min': val - margin, \
-                             'max': val + margin\
-                                }
-                        for param,  val in exponents.items()}
-
-    if gridType == 'logarithmic':
-       newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION)\
-                                                                for param, borders in newParamDict.items()}
-    elif gridType == 'equidistance':
-        newParam_grid = {param: np.unique(np.rint(np.linspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION))).astype(int)\
-                                                                for param, borders in newParamDict.items()}
-    print '[genericOptimzer] searching grid (fine):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
-    grid = gridSearch(X, y, pred, newParam_grid)
-    pred = grid.best_estimator_
-    bestParamsFromFineSearch = pred.get_params()
-    fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
-    print("[genericOptimzer] The best parameters (fine) are %s with a score of %0.2f"
-          % (grid.best_params_, grid.best_score_))
-
-    # C_range = newParam_grid['C']
-    # gamma_range = newParam_grid['gamma']
-    # print "[genericOptimzer] saving fine grid to file..."
-    # plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
-    # runtime['plot_num'] += 1
-
+   
+    #Testing!!!
     return pred
+    
+
+#     bestParamsFromCoarseSearch = pred.get_params()
+# 
+#     bestCoarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+#     print("[genericOptimzer] The best parameters (coarse) are %s with a score of %0.2f"
+#           % (grid.best_params_, grid.best_score_))
+# 
+#     # C_range = param_grid['C']
+#     # gamma_range = param_grid['gamma']
+#     # print "[genericOptimzer] saving coarse grid to file..."
+#     # plotGridSearch(grid, C_range, gamma_range, 'coarse_grid_{}'.format(plot_num))
+# 
+#     if gridType == 'logarithmic':
+#         margin = 1
+#         #get base-2 exponents, and define new grid limits
+#         exponents = {param: np.floor(np.log10(value)) for param, value in bestCoarseParams.items() }
+#     
+#         newParamDict = {param: \
+#                             {'min': coarseExponent, \
+#                              'max': coarseExponent + margin \
+#                                 }
+#                         for param, coarseExponent in exponents.items()}
+#     elif gridType == 'equidistance':
+#         margin = 10
+#         newParamDict = {param: \
+#                             {'min': val - margin, \
+#                              'max': val + margin\
+#                                 }
+#                         for param,  val in exponents.items()}
+# 
+#     if gridType == 'logarithmic':
+#        newParam_grid = {param: np.logspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION)\
+#                                                                 for param, borders in newParamDict.items()}
+#     elif gridType == 'equidistance':
+#         newParam_grid = {param: np.unique(np.rint(np.linspace(borders['min'], borders['max'], num=GRIDSEARCH_RESOLUTION))).astype(int)\
+#                                                                 for param, borders in newParamDict.items()}
+#     print '[genericOptimzer] searching grid (fine):\nparams: {}\nparam_grid: {}'.format(paramDict, param_grid)
+#     grid = gridSearch(X, y, pred, newParam_grid)
+#     pred = grid.best_estimator_
+#     bestParamsFromFineSearch = pred.get_params()
+#     fineParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
+#     print("[genericOptimzer] The best parameters (fine) are %s with a score of %0.2f"
+#           % (grid.best_params_, grid.best_score_))
+# 
+#     # C_range = newParam_grid['C']
+#     # gamma_range = newParam_grid['gamma']
+#     # print "[genericOptimzer] saving fine grid to file..."
+#     # plotGridSearch(grid, C_range, gamma_range, 'fine_grid_{}'.format(plot_num))
+#     # runtime['plot_num'] += 1
+# 
+#     return pred
 
 
 def optimizeHyperParams(X, y, predictorType):
