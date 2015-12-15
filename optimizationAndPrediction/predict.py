@@ -225,8 +225,8 @@ def predictOnWindows(data, lables, names):
     #==============================================================================================
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
-    # predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    predictor_types = ['RF']
+    predictor_types = ['SVM', 'RF', 'logisticReg'] 
+    # predictor_types = ['RF']
     
     results = {}
     #predictors = dict()
@@ -294,7 +294,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(0.5)
+    data, labels, names = getRandomSample(10)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
