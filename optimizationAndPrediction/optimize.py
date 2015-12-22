@@ -94,7 +94,7 @@ def gridSearch(X, y,pred, param_grid):
     '''
     print "got param_grid: {}".format(param_grid)
     cv = StratifiedShuffleSplit(y, n_iter=NUMBER_OF_FOLDS, test_size=1./NUMBER_OF_FOLDS, random_state=42)
-    grid = GridSearchCV(pred, param_grid=param_grid, cv=cv, scoring=lossScorer)
+    grid = GridSearchCV(pred, param_grid=param_grid, cv=cv, scoring=lossScorer, n_jobs=8)
     grid.fit(X, y)
     return grid
 
@@ -138,7 +138,6 @@ def genericOptimzer(X, y, pred, paramDict, gridType = 'logarithmic'):
     #Testing!!!
     return pred
     
-
 #     bestParamsFromCoarseSearch = pred.get_params()
 # 
 #     bestCoarseParams = {param: bestParamsFromCoarseSearch[param] for param in parameters}
@@ -215,7 +214,7 @@ def optimizeHyperParams(X, y, predictorType):
         paramDict = {
               #'n_estimators': {'min': 40, 'max': 650},\
               #'max_features': {'min': 1, 'max': 20}}
-              'n_estimators': {'min': 50, 'max': 50},\
+              'n_estimators': {'min': 20, 'max': 90},\
               'max_features': {'min': 20, 'max': n_features - 20}}
               #"max_depth": [3, None],
               #"bootstrap": [True, False],

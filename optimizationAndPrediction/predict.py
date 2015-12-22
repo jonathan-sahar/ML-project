@@ -216,8 +216,9 @@ def tuneAndTrain(predictorType, data, labels, patientIds, numFolds, lossFunction
         #Testing
         print "[tuneAndTrain] testing predictor..."
         errors.append(twoStepsLoss(predictor, selectedTestData, testLabels, testNames)) # change lossFunction to twoStepsLoss for conf_8
-
-    return np.array(errors).mean()
+    result = np.array(errors).mean()
+    print "the prediction with current predictor is {}".format(result)
+    return result
 
 def predictOnWindows(data, lables, names):
     # learning on data divided into time windows
@@ -228,7 +229,9 @@ def predictOnWindows(data, lables, names):
     #each result is a Dictionary with all learning Iterations (features, 'all')
     #==============================================================================================
     predictor_types = ['SVM', 'RF', 'logisticReg'] 
-    #predictor_types = ['RF']
+
+    #predictor_types = ['RF', 'logisticReg']
+
     
     results = {}
     #predictors = dict()
@@ -238,10 +241,10 @@ def predictOnWindows(data, lables, names):
     # predictors['logisticRegL1'] = LogisticRegression('l1', multi_class='ovr')
 
     # regular prediction
-    for predictor in predictor_types:
-        print "running {} on windows".format(predictor)
-        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
-        print "{} on windows is done!".format(predictor)
+#    for predictor in predictor_types:
+#        print "running {} on windows".format(predictor)
+#        results[predictor] = tuneAndTrain(predictor, data, lables, names, NUMBER_OF_FOLDS)
+#        print "{} on windows is done!".format(predictor)
 
 
    # committee prediction
@@ -251,7 +254,7 @@ def predictOnWindows(data, lables, names):
         print "{} on windows is done!".format(predictor)
 
     for type, res in results.items():
-        print "error on {} is: {}".format(type, res)
+        print "success on {} is: {}".format(type, res)
     return results
 
 def predictOnFeatures(data, labels):
@@ -293,7 +296,7 @@ def predict():
     # labels = linePerFiveMinutesLabels 
     # names = linePerFiveMinutesNames 
     
-    data, labels, names = getRandomSample(3)
+    data, labels, names = getRandomSample(10)
     names = [names] # ugly hack: tuneAndTrain (called from predictOnWindows
                     # expects names to be the [0] element of another list)
     
